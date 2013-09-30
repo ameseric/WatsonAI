@@ -1,0 +1,18 @@
+package kmad;
+
+import java.util.ArrayList;
+import java.util.Scanner;
+
+public class Candidate {
+	private ArrayList<Double> scores;
+	
+	public Candidate(String scoreString){
+		scores = new ArrayList<Double>();
+		Scanner scoreScanner = new Scanner(scoreString);
+		scoreScanner.useDelimiter(",");
+		while(scoreScanner.hasNext()){
+			scores.add(scoreScanner.nextDouble());
+		}
+	}
+
+}

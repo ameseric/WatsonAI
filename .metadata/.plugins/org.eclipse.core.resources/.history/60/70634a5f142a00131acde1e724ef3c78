@@ -1,0 +1,32 @@
+package kmad;
+
+import java.util.ArrayList;
+import java.util.Scanner;
+
+public class Candidate {
+	private ArrayList<Double> scores;
+	private Boolean training;
+	
+	public Candidate(String scoreString, Boolean training = false){
+		scores = new ArrayList<Double>();
+		double temp;
+		Scanner scoreScanner = new Scanner(scoreString);
+		scoreScanner.useDelimiter(",");
+		while(scoreScanner.hasNext()){
+			temp = scoreScanner.nextDouble();
+			//scores.add(scoreScanner.nextDouble());
+			if(!scoreScanner.hasNext()){ //true or false area. 
+				if(temp == 1){ //for training mode data only, will print if true
+					System.out.println(scores.toString());	
+				}
+				else {
+					scores.add(temp);
+				}
+			}
+			else{				
+				scores.add(temp);
+			}
+		}
+	}
+
+}

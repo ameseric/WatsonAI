@@ -6,7 +6,7 @@ package kmad;
 
 /**
  *
- * @author amesen
+ * @author Ian and Joseph, hopefully.
  */
 public class KMAD {
 

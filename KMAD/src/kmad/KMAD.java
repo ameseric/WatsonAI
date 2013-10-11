@@ -38,8 +38,8 @@ public class KMAD {
     		Candidate c = new Candidate(line, true);
     		candidates.add(c);
     	}
-		ArrayList<Candidate> filteredCandIDThree = candidates;
-    	ArrayList<Candidate> filteredCandGenetic = candidates;
+		ArrayList<Candidate> filteredCandIDThree = new ArrayList(candidates);
+    	ArrayList<Candidate> filteredCandGenetic = new ArrayList(candidates);
 		
 		//Start children for different approaches ARRAYS MUST BE MUTABLE
 		Thread IDThree = new Thread((new IDThree(filteredCandIDThree)));

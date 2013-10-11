@@ -8,17 +8,18 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.lang.Thread;
 
 /**
  *
- * @author Ian and Joseph, hopefully.
+ * @author Ian and Joseph, modifications to be made by Eric.
  */
 public class KMAD {
 
     /**
      * @param args the command line arguments
      */
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException{
         // TODO code application logic here
     	File inFile = new File("TGMC training-sample.csv");
     	Scanner in = null;
@@ -28,7 +29,7 @@ public class KMAD {
     		in = new Scanner(inFile);
 		} catch (FileNotFoundException e) {
 			System.out.println("Input File not found");
-			System.exit(1); //can;t do anything, exit.
+			System.exit(1); //can't do anything, exit.
 		}
     	
     	String line;
@@ -37,5 +38,18 @@ public class KMAD {
     		Candidate c = new Candidate(line, true);
     		candidates.add(c);
     	}
+		ArrayList<Candidate> filteredCandIDThree = candidates;
+    	ArrayList<Candidate> filteredCandGenetic = candidates;
+		
+		//Start children for different approaches ARRAYS MUST BE MUTABLE
+		Thread IDThree = new Thread((new IDThree(filteredCandIDThree)));
+		IDThree.start();
+		Thread Genetic = new Thread((new Genetic(filteredCandGenetic)));
+		Genetic.start();
+		
+		//Wait for children
+		IDThree.join();
+		Genetic.join();
+
     }
 }

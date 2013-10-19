@@ -6,6 +6,7 @@ import java.util.Scanner;
 public class Candidate {
 	private ArrayList<Double> scores;
 	private Boolean training;
+	private int true_cand = 0;
 	
 	public Candidate(String scoreString, Boolean training){
 		scores = new ArrayList<Double>();
@@ -17,7 +18,8 @@ public class Candidate {
 			//scores.add(scoreScanner.nextDouble());
 			if(!scoreScanner.hasNext() && training){ //true or false area. 
 				if(temp.equalsIgnoreCase("TRUE")){ //for training mode data only, will print if true
-					System.out.println(scores.toString());	
+					true_cand = 1;
+					//System.out.println(scores.toString());	
 				}
 			}
 			else{				
@@ -25,5 +27,17 @@ public class Candidate {
 			}
 		}
 	}
+	
+	
+	//returns the element from candidate
+	public double getElement(int index){
+		return scores.get(index);	
+	}
+	
+	//returns if the candidate is true. 
+	public int getTrue(){
+		return true_cand;
+	}
+	
 
 }

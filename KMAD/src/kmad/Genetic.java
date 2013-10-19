@@ -7,9 +7,12 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Random;
 
-public class Genetic implements Runnable{
+public class Genetic{
 //TODO: Make this class
+	static int PopulationSize = 10;
+	static int NumberOfGenerations = 10;
     ArrayList<Candidate> candidates = new ArrayList<Candidate>();  
+    ArrayList<GeneticEntity> population = new ArrayList<GeneticEntity>();
     int cols = 319;
     int generation;
     double delta[];
@@ -51,7 +54,7 @@ public class Genetic implements Runnable{
 			e.printStackTrace();
 		}
 		
-		//geneticAct(columns);
+		geneticAct(columns);
 		//System.out.printf("outfile length is: %d \n", outfile.length());
 		long x = outfile.length();
 		
@@ -73,30 +76,32 @@ public class Genetic implements Runnable{
     }
     
     public void geneticAct(double[] columns){
-    	Candidate c0;
-    	for ( int i = 0; i < candidates.size(); i++){
-    		double sum = 0;
-    		c0 = candidates.get(i);
-    	    for (int j = 0; j < cols; j++){
-    	    	sum = sum + c0.getElement(j)*columns[j];
-    		}
-    	    if (sum > 200){
-    	    	//System.out.printf("candidate %d is expected to be true. \n", i);
-    	    }
-    	    double[] c2 = new double[cols]; 
-    	    c2 = mutate(columns);
-    	}    	
-    }
-    
-    public double[] mutate(double[] columns){
-    	double temp;
-    	for (int i = 2; i < cols; i++){ //keep candidate, q at zero
-    		Random r = new Random();
-    		temp = (r.nextDouble()-0.5)*delta[i]; //mutate based on max values in columnb
-    		columns[i] = columns[i] + temp;
+    	this.createInitialPopulation(columns);
+    	this.evaluatePopulation();
+    	
+    	for(int i = 1; i < Genetic.NumberOfGenerations; i++){
+    		this.createNextGeneration();
+    		this.evaluatePopulation();
     	}
-    	return columns;
+
     }
+
+	private void evaluatePopulation() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	private void createNextGeneration() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	private void createInitialPopulation(double[] columns) {
+		for(int i = 0; i < Genetic.PopulationSize; i++){
+			GeneticEntity e = new GeneticEntity(columns);
+			this.population.add(e);
+		}
+	}
 	
 }
 

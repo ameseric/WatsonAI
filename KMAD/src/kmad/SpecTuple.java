@@ -30,4 +30,20 @@ public class SpecTuple {
 		return -9999;
 	}
 	
+	public void average(SpecTuple y){
+		score = ((score + y.score) / 2);
+	}
+	
+	public void average(SpecTuple y, SpecTuple z){
+		score = ((score + y.score + z.score) / 3);
+	}
+	
+	public boolean sameID(SpecTuple compared){
+		if(ID == compared.ID){
+			return true;
+		}else{
+			return false;
+		}
+	}
+	
 }

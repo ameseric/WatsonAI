@@ -17,13 +17,19 @@ public class Candidate {
 			//scores.add(scoreScanner.nextDouble());
 			if(!scoreScanner.hasNext() && training){ //true or false area. 
 				if(temp.equalsIgnoreCase("TRUE")){ //for training mode data only, will print if true
-					System.out.println(scores.toString());	
+					//System.out.println(scores.toString());	
 				}
 			}
 			else{				
 				scores.add(Double.parseDouble(temp));
 			}
 		}
+	}
+	
+	
+	//returns the element from candidate
+	public double getElement(int index){
+		return scores.get(index);	
 	}
 
 }

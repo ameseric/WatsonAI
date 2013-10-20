@@ -4,11 +4,14 @@ import java.util.ArrayList;
 import java.util.Random;
 
 public class GeneticEntity {
-	private double weights[];
-	private int length;
+	public double weights[];
+	public int length;
 	private static Random r = new Random();
-	static double mutationChance = 0.0;
+	static double mutationChance = 1.0;
 	
+	public GeneticEntity(){
+		
+	}
 	public GeneticEntity(double delta[]){
 		this.weights = delta;
 		this.length = delta.length;
@@ -18,7 +21,7 @@ public class GeneticEntity {
 				weights[i] = 0;
 			} else weights[i] = (r.nextDouble()-0.5)*2 / weights[i];
 		}
-		System.out.println(this.toString());
+		//System.out.println(this.toString());
 	}
 	
 	public GeneticEntity(GeneticEntity p1, GeneticEntity p2){
@@ -28,17 +31,24 @@ public class GeneticEntity {
 		double p2weights[] = p2.getWeights();
 		
 		int crossOverSite = this.r.nextInt() % this.length;
+
 		for(int i = 0; i < this.length; i++){
 			//Cross-over
 			if(i > crossOverSite){
-				weights[i] = p2weights[i];				
+				this.weights[i] = p2weights[i];				
 			}
 			//Mutation
 			if(r.nextDouble() < GeneticEntity.mutationChance){
-				weights[i] += (r.nextDouble()-0.5)*2;
+				this.weights[i] += (r.nextDouble()-0.5)*2;
 			}
 		}
-//		System.out.println(this.toString());
+		//System.out.println(this.toString());
+	}
+	
+	//Create a copy
+	public GeneticEntity(double weights[], int length){
+		this.weights = weights;
+		this.length = length;
 	}
 	
 	private double[] getWeights(){
@@ -70,6 +80,10 @@ public class GeneticEntity {
 			s += this.weights[i];
 		}
 		return s;
+	}
+	
+	public GeneticEntity copy(){
+		return new GeneticEntity(weights, length);
 	}
 
 }

@@ -22,7 +22,7 @@ public class KMAD {
 	 */
 	public static void main(String[] args) throws InterruptedException {
 		// TODO code application logic here
-		File inFile = new File("tgmctrain.csv");
+		File inFile = new File("./tgmctrain.csv");
 		// File inFile = new File("TGMC training-sample.csv");
 		Scanner in = null;
 		File inFile2 = new File("min-max_values.txt");
@@ -43,12 +43,7 @@ public class KMAD {
 			System.exit(1); // can't do anything, exit.
 		}
 
-		try {
-			in2 = new Scanner(inFile2);
-		} catch (FileNotFoundException e) {
-			System.out.println("Input File for deltas not found");
-			System.exit(1); // can't do anything, exit.
-		}
+
 
 		String line;
 		int u = 0;

@@ -20,6 +20,7 @@ public class Scoring {
 			else {
 				wrong++;
 			}
+			//System.out.println("candidate " + potentials.get(i).getElement(0)); //print out candidate number
 		}
 		
 		ret[0] = right;
@@ -52,7 +53,7 @@ public class Scoring {
 	}
 	
 	public static GeneticEntity geneticScorer(ArrayList<GeneticEntity> entities, ArrayList<ArrayList<Candidate>> vals){
-		int score[] = new int[entities.size()];
+		//int score[] = new int[entities.size()];
 		int max = Integer.MIN_VALUE;
 		int temp, pos=0;
 		
@@ -74,8 +75,9 @@ public class Scoring {
 		int temp[];
 		for (int i = 0; i < entities.size(); i++){
 			temp = score0(vals.get(i));
-			score[i] = temp[0] - temp[1];
-//			System.out.println("Correct: " + temp[0] + " Incorrect: " + temp[1]);
+			score[i] = temp[0]*2 - temp[1]; //weight towards correct ones. 
+			
+			//System.out.println("Number " + i + " Correct: " + temp[0] + " Incorrect: " + temp[1]);
 		}
 		
 		

@@ -7,7 +7,7 @@ public class GeneticEntity {
 	public double weights[];
 	public int length;
 	private static Random r = new Random();
-	static double mutationChance = 1.0;
+	static double mutationChance = 0.2;
 	
 	public GeneticEntity(){
 		
@@ -24,13 +24,13 @@ public class GeneticEntity {
 		//System.out.println(this.toString());
 	}
 	
-	public GeneticEntity(GeneticEntity p1, GeneticEntity p2){
-		this.weights = p1.getWeights();
-		this.length = this.weights.length;
+	public GeneticEntity(GeneticEntity p1, GeneticEntity p2, double[] delta){
+		weights = p1.getWeights();
+		this.length = weights.length;
 		
 		double p2weights[] = p2.getWeights();
 		
-		int crossOverSite = this.r.nextInt() % this.length;
+		int crossOverSite = Math.abs(this.r.nextInt()) % this.length;
 
 		for(int i = 0; i < this.length; i++){
 			//Cross-over
@@ -39,7 +39,7 @@ public class GeneticEntity {
 			}
 			//Mutation
 			if(r.nextDouble() < GeneticEntity.mutationChance){
-				this.weights[i] += (r.nextDouble()-0.5)*2;
+				weights[i] += (r.nextDouble()-0.5)*4*delta[i];
 			}
 		}
 		//System.out.println(this.toString());
@@ -51,7 +51,7 @@ public class GeneticEntity {
 		this.length = length;
 	}
 	
-	private double[] getWeights(){
+	public double[] getWeights(){
 		return this.weights;
 	}
 	
@@ -66,7 +66,7 @@ public class GeneticEntity {
 	public ArrayList<Candidate> scoreCandidates(ArrayList<Candidate> candidates){
 		ArrayList<Candidate> trueCandidates = new ArrayList<Candidate>();
 		for (Candidate candidate : candidates) {
-			if(this.scoreCandidate(candidate) > 100){
+			if(this.scoreCandidate(candidate) > 200){
 				trueCandidates.add(candidate);
 			}
 		}

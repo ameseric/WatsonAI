@@ -9,13 +9,14 @@ import java.util.Random;
 
 public class Genetic{
 //TODO: Make this class
-	static int PopulationSize = 10;
-	static int NumberOfGenerations = 10;
+	static int PopulationSize = 100;
+	static int NumberOfGenerations = 2000;
     ArrayList<Candidate> candidates = new ArrayList<Candidate>();  
     ArrayList<GeneticEntity> population = new ArrayList<GeneticEntity>();
     int cols = 319;
     int generation;
     double delta[];
+    int max;
 	private int[] scores;
 	
 	
@@ -51,7 +52,8 @@ public class Genetic{
 		}
 		
 		
-		geneticAct(columns);
+		geneticAct(columns, columns);
+		System.out.println(this.max);
 		//System.out.printf("outfile length is: %d \n", outfile.length());
 		//long x = outfile.length();
 //		try {
@@ -81,16 +83,16 @@ public class Genetic{
 		
     }
     
-    public void geneticAct(double[] columns){
+    public void geneticAct(double[] columns, double[] delta){
     	System.out.println("Creating generation 0");
     	this.createInitialPopulation(columns);
     	System.out.println("Evaluating...");
     	this.evaluatePopulation();
     	
     	for(int i = 1; i < Genetic.NumberOfGenerations; i++){
-    		System.out.println("Creating generation " + i);
+    		//System.out.println("Creating generation " + i);
     		this.createNextGeneration();
-    		System.out.println("Evaluating...");
+    		//System.out.println("Evaluating...");
     		this.evaluatePopulation();
     	}
 
@@ -114,12 +116,15 @@ public class Genetic{
 	private void createNextGeneration() {
 		ArrayList<GeneticEntity> newPopulation0 = new ArrayList<GeneticEntity>(); 
 		GeneticEntity newPopulation[] = new GeneticEntity[this.PopulationSize];
+		Random r = new Random();
+		
 		//highest scoring entity is kept
 		int maxIndex = 0;
 		int minIndex = 0;
 		int minScore;
 		int scoreSum = 0;
 		for(int i = 0; i < scores.length; i++){
+			//System.out.println(scores[i]);
 			if(scores[i] > scores[maxIndex]){
 				maxIndex = i;
 			}
@@ -128,28 +133,43 @@ public class Genetic{
 			}
 			scoreSum += scores[i];
 		}
-		minScore = Math.abs(scores[minIndex]);
-		scoreSum += minScore * scores.length;
+		this.max = scores[maxIndex];
+		
+		ArrayList<Integer> maxs = new ArrayList<Integer>();
+		//create an array for all the ones at the max value
+		for(int i = 0; i < scores.length; i++){
+			if (scores[i] == this.max){
+				maxs.add(i);
+			}
+		}
+		
+		maxIndex = maxs.get(r.nextInt(maxs.size()));
+		
+		System.out.println(maxIndex + " scored " + scores[maxIndex]);
+		//minScore = Math.abs(scores[minIndex]);
+		//scoreSum += minScore * scores.length;
+		
+		//System.out.println("score for " + this.population.get(maxIndex).toString() + " scored: " + scores[maxIndex]);
 		
 		newPopulation[0] = new GeneticEntity();
-		newPopulation[0].weights = this.population.get(maxIndex).weights;
+		newPopulation[0].weights = this.population.get(maxIndex).getWeights().clone();
 		newPopulation[0].length = this.population.get(maxIndex).length;
-		System.out.println("score for " + this.population.get(maxIndex).toString() + " scored: " + scores[maxIndex]);
+		newPopulation0.add(newPopulation[0]);
+		
 		
 	
-		Random r = new Random();
 		for(int i = 1; i < Genetic.PopulationSize; i++){
 			//randomly select two entities to merge
 			//if(scoreSum == 0){
-			scoreSum = Genetic.PopulationSize;
+			//	scoreSum = Genetic.PopulationSize;
 			//}
 			
-//			int p1 = this.selectParent(scores[maxIndex], (r.nextInt()%scoreSum));
-//			int p2 = this.selectParent(scores[maxIndex], (r.nextInt()%scoreSum));
+			//int p1 = this.selectParent(scores[maxIndex], (r.nextInt()%scoreSum), 0);
+			//int p2 = this.selectParent(scores[maxIndex], (r.nextInt()%scoreSum), 1);
 			int p1 = r.nextInt(Genetic.PopulationSize);
 			int p2 = r.nextInt(Genetic.PopulationSize);
 			//System.out.println("the parents are p1: " + p1 + " p2: " + p2);
-			GeneticEntity temp = new GeneticEntity(this.population.get(p1), this.population.get(p2));
+			GeneticEntity temp = new GeneticEntity(this.population.get(p1), this.population.get(p2), delta);
 			//System.out.println("temporary value " + temp);
 			newPopulation[i] = new GeneticEntity();//creator(this.population.get(p1), this.population.get(p2));
 			newPopulation[i].weights = temp.weights.clone();
@@ -158,12 +178,14 @@ public class Genetic{
 			//System.out.println("Value read after adding " + newPopulation[0]);
 			//this.population.set(i, temp);
 		}
-		for (int i = 0; i < Genetic.PopulationSize; i++){
-			System.out.println("Value in array added to population" + newPopulation[i]);
+		for (int i = 1; i < Genetic.PopulationSize; i++){
+			//System.out.println("Value in array added to population" + newPopulation[i]);
 			newPopulation0.add(newPopulation[i]);
-			System.out.println("first value of population " + newPopulation0.get(0));
-			System.out.println("current value of population " + newPopulation0.get(i));
-			System.out.println();
+//			System.out.println("first value of population " + newPopulation0.get(0));
+//			if (i > 0) {
+//				System.out.println("current value of population " + newPopulation0.get(i));
+//			}
+			//System.out.println();
 		}
 		this.population = newPopulation0;
 
@@ -171,35 +193,46 @@ public class Genetic{
 	
 	private GeneticEntity creator(GeneticEntity p1, GeneticEntity p2){
 		GeneticEntity temp;
-		temp = new GeneticEntity(p1, p2);
+		temp = new GeneticEntity(p1, p2, delta);
 		return temp;
 	}
 	
-	private int selectParent(int maxScore, int r){
-//		int current = r;
-//		Random t0 = new Random();
-//		double temp;
-//		if (maxScore == 0) {
-//			maxScore = 1;
-//		}
-//		for(int j = 1; j < Genetic.PopulationSize; j++){
-//			//current -= (scores[j] + minScore);
-//			temp = t0.nextDouble();
+	private int selectParent(int maxScore, int r, int v){
+		int current = r;
+		Random t0 = new Random();
+		double temp;
+		if (maxScore == 0) {
+			maxScore = 1;
+		}
+		for(int j = 1+v; j < Genetic.PopulationSize; j++){
+			//current -= (scores[j] + minScore);
+			temp = t0.nextDouble();
 //			System.out.println(Math.abs(((double) scores[j])/maxScore));
-//			if( temp < Math.abs(((double) scores[j])/maxScore)){
-//				return j;
-//			}
-//		}
+			if( temp < Math.abs(((double) (scores[j]-t0.nextDouble()))/maxScore)){
+				return j;
+			}
+		}
 //		System.out.println("i am hit, medic, medic");
 		return 0;
 		
 	}
 
 	private void createInitialPopulation(double[] columns) {
+		ArrayList<GeneticEntity> newPopulation0 = new ArrayList<GeneticEntity>(); 
+		GeneticEntity newPopulation[] = new GeneticEntity[this.PopulationSize];
+		
 		for(int i = 0; i < Genetic.PopulationSize; i++){
 			GeneticEntity e = new GeneticEntity(columns);
-			this.population.add(e);
+			//System.out.println("temporary value " + temp);
+			newPopulation[i] = new GeneticEntity();//creator(this.population.get(p1), this.population.get(p2));
+			newPopulation[i].weights = e.weights.clone();
+			newPopulation[i].length = e.length;
+			
 		}
+		for(int i = 0; i < Genetic.PopulationSize; i++){
+			population.add(newPopulation[i]);
+		}
+		
 	}
 	
 }

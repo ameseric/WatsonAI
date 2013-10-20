@@ -1,27 +1,29 @@
 package kmad;
 
+import java.util.ArrayList;
 import java.util.Random;
 
 public class GeneticEntity {
 	private double weights[];
 	private int length;
-	private Random r;
-	static double mutationChance = 0.05;
+	private static Random r = new Random();
+	static double mutationChance = 0.0;
 	
 	public GeneticEntity(double delta[]){
 		this.weights = delta;
 		this.length = delta.length;
-		this.r = new Random();
 		
 		for(int i = 0; i < this.length; i++) {
-			weights[i] = (r.nextDouble()-0.5)*2 / weights[i];
+			if(weights[i] == 0){
+				weights[i] = 0;
+			} else weights[i] = (r.nextDouble()-0.5)*2 / weights[i];
 		}
+		System.out.println(this.toString());
 	}
 	
 	public GeneticEntity(GeneticEntity p1, GeneticEntity p2){
 		this.weights = p1.getWeights();
 		this.length = this.weights.length;
-		this.r = new Random();
 		
 		double p2weights[] = p2.getWeights();
 		
@@ -32,22 +34,33 @@ public class GeneticEntity {
 				weights[i] = p2weights[i];				
 			}
 			//Mutation
-			if(r.nextDouble()*GeneticEntity.mutationChance > 0.5){
-				weights[i] *= (r.nextDouble()-0.5)*2;
+			if(r.nextDouble() < GeneticEntity.mutationChance){
+				weights[i] += (r.nextDouble()-0.5)*2;
 			}
 		}
+//		System.out.println(this.toString());
 	}
 	
 	private double[] getWeights(){
 		return this.weights;
 	}
 	
-	public double scoreCandidate(Candidate c){
+	private double scoreCandidate(Candidate c){
 		double score = 0;
 		for(int i = 0; i < this.length; i++){
 			score += c.getElement(i) * this.weights[i];
 		}
 		return score;
+	}
+	
+	public ArrayList<Candidate> scoreCandidates(ArrayList<Candidate> candidates){
+		ArrayList<Candidate> trueCandidates = new ArrayList<Candidate>();
+		for (Candidate candidate : candidates) {
+			if(this.scoreCandidate(candidate) > 100){
+				trueCandidates.add(candidate);
+			}
+		}
+		return trueCandidates;
 	}
 	
 	public String toString(){

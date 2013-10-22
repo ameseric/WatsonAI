@@ -24,17 +24,32 @@ public class KMAD {
 		// TODO code application logic here
 		File inFile = new File("./tgmctrain.csv");
 		// File inFile = new File("TGMC training-sample.csv");
-		Scanner in = null;
+//		Scanner in = null;
 		File inFile2 = new File("min-max_values.txt");
 		Scanner in2 = null;
 		ArrayList<Candidate> candidates = new ArrayList<Candidate>();
-
-		try {
-			in = new Scanner(inFile);
-		} catch (FileNotFoundException e) {
-			System.out.println("Input File not found");
-			System.exit(1); // can't do anything, exit.
-		}
+		
+		
+		//TODO: Changes to pull file input out of wrapper here! - Joseph Doherty
+//		try {
+//			in = new Scanner(inFile);
+//		} catch (FileNotFoundException e) {
+//			System.out.println("Input File not found");
+//			System.exit(1); // can't do anything, exit.
+//		}
+//
+		String line;
+////		int u = 0;
+//		while (in.hasNext()) {
+//			// TODO
+////			u++;
+////			if (u == 100) { // get rid of for real
+////				break;
+////			}
+//			line = in.nextLine();
+//			Candidate c = new Candidate(line, true);
+//			candidates.add(c);
+//		}
 
 		try {
 			in2 = new Scanner(inFile2);
@@ -45,18 +60,6 @@ public class KMAD {
 
 
 
-		String line;
-		int u = 0;
-		while (in.hasNext()) {
-			// TODO
-			u++;
-			if (u == 100) { // get rid of for real
-				break;
-			}
-			line = in.nextLine();
-			Candidate c = new Candidate(line, true);
-			candidates.add(c);
-		}
 
 		double v0;
 		double vals[] = new double[638];
@@ -71,14 +74,17 @@ public class KMAD {
 				vals[i] = Double.parseDouble(in3.next());
 				i++;
 			}
+			in3.close();
 		}
+		in2.close();
+		
 		for (i = 0; i < 319; i++) {
 			delta[i] = Math.abs((vals[i] - vals[i + 230]));
 			// System.out.println(delta[i]);
 		}
 
 		// ArrayList<SpecTuple> filteredCandIDThree = new IDThree(candidates);
-		Genetic genetic = new Genetic(candidates, delta);
+		Genetic genetic = new Genetic(candidates, delta, inFile);
 		genetic.run();
 		// ArrayList<SpecTuple> filteredCandGenetic = new Genetic(candidates,
 		// delta);

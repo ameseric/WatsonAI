@@ -4,12 +4,12 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Candidate {
-	private ArrayList<Double> scores;
-	private Boolean training;
-	private int true_cand = 0;
+	private ArrayList<Float> scores;
+	private boolean training;
+	private boolean true_cand = false;
 	
 	public Candidate(String scoreString, Boolean training){
-		scores = new ArrayList<Double>();
+		scores = new ArrayList<Float>();
 		String temp;
 		Scanner scoreScanner = new Scanner(scoreString);
 		scoreScanner.useDelimiter(",");
@@ -20,14 +20,15 @@ public class Candidate {
 			//scores.add(scoreScanner.nextDouble());
 			if(!scoreScanner.hasNext() && training){ //true or false area. 
 				if(temp.equalsIgnoreCase("TRUE")){ //for training mode data only, will print if true
-					true_cand = 1;
+					true_cand = true;
 					//System.out.println(scores.toString());	
-				}
+				} 
 			}
 			else{				
-				scores.add(Double.parseDouble(temp));
+				scores.add(Float.parseFloat(temp));
 			}
 		}
+		scoreScanner.close();
 	}
 	
 	
@@ -37,7 +38,7 @@ public class Candidate {
 	}
 	
 	//returns if the candidate is true. 
-	public int getTrue(){
+	public boolean getTrue(){
 		return true_cand;
 	}
 	

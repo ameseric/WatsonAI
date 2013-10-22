@@ -9,23 +9,26 @@ import java.util.Random;
 
 public class Genetic{
 //TODO: Make this class
-	static int PopulationSize = 100;
-	static int NumberOfGenerations = 2000;
+	static final int PopulationSize = 10;
+	static final int NumberOfGenerations = 2000;
     ArrayList<Candidate> candidates = new ArrayList<Candidate>();  
     ArrayList<GeneticEntity> population = new ArrayList<GeneticEntity>();
     int cols = 319;
     int generation;
     double delta[];
     int max;
-	private int[] scores;
+	private ArrayList<Integer> scores;
+	private File inFile;
 	
 	
     
-	public Genetic(ArrayList<Candidate> passedIn, double delta[]){
+	public Genetic(ArrayList<Candidate> passedIn, double delta[], File inFile){
 		//TODO: fill-in constructor
 		candidates = passedIn;
 		generation = 0;
 		this.delta = delta;
+		this.inFile = inFile;
+		this.scores = new ArrayList<Integer>();
 	}
     
     public void run(){
@@ -99,23 +102,28 @@ public class Genetic{
     }
 
 	private void evaluatePopulation() {
-		ArrayList<ArrayList<Candidate>> vals = new ArrayList<ArrayList<Candidate>>();
+		this.scores = new ArrayList<Integer>();
+//		ArrayList<Integer> popScores = new ArrayList<Integer>();
 		
 //		int entityNumber = 0;
 		for (int i = 0; i < Genetic.PopulationSize; i++) {
 //			System.out.println("Entity " + entityNumber);
 //			entityNumber++;
 //			System.out.println(this.population.get(i).toString());
-			vals.add(this.population.get(i).scoreCandidates(candidates));
+			this.scores.add(this.population.get(i).scoreCandidates(candidates, inFile));
+//			popScores.add(this.population.get(i).scoreCandidates(candidates, inFile));
+//			popScores.add(i);
 		}
 		
-		this.scores = Scoring.geneticScores(population, vals);
+		//this.scores = Scoring.geneticScores(population, popScores);
+//		this.scores = popScores;
+		System.out.println(this.scores);
 		
 	}
 
 	private void createNextGeneration() {
 		ArrayList<GeneticEntity> newPopulation0 = new ArrayList<GeneticEntity>(); 
-		GeneticEntity newPopulation[] = new GeneticEntity[this.PopulationSize];
+		GeneticEntity newPopulation[] = new GeneticEntity[Genetic.PopulationSize];
 		Random r = new Random();
 		
 		//highest scoring entity is kept
@@ -123,29 +131,29 @@ public class Genetic{
 		int minIndex = 0;
 		int minScore;
 		int scoreSum = 0;
-		for(int i = 0; i < scores.length; i++){
+		for(int i = 0; i < scores.size(); i++){
 			//System.out.println(scores[i]);
-			if(scores[i] > scores[maxIndex]){
+			if(scores.get(i) > scores.get(maxIndex)){
 				maxIndex = i;
 			}
-			if(scores[i] < scores[minIndex]){
+			if(scores.get(i) < scores.get(minIndex)){
 				minIndex = i;
 			}
-			scoreSum += scores[i];
+			scoreSum += scores.get(i);
 		}
-		this.max = scores[maxIndex];
+		this.max = scores.get(maxIndex);
 		
 		ArrayList<Integer> maxs = new ArrayList<Integer>();
 		//create an array for all the ones at the max value
-		for(int i = 0; i < scores.length; i++){
-			if (scores[i] == this.max){
+		for(int i = 0; i < scores.size(); i++){
+			if (scores.get(i) == this.max){
 				maxs.add(i);
 			}
 		}
 		
 		maxIndex = maxs.get(r.nextInt(maxs.size()));
 		
-		System.out.println(maxIndex + " scored " + scores[maxIndex]);
+		System.out.println(maxIndex + " scored " + scores.get(maxIndex));
 		//minScore = Math.abs(scores[minIndex]);
 		//scoreSum += minScore * scores.length;
 		
@@ -208,7 +216,7 @@ public class Genetic{
 			//current -= (scores[j] + minScore);
 			temp = t0.nextDouble();
 //			System.out.println(Math.abs(((double) scores[j])/maxScore));
-			if( temp < Math.abs(((double) (scores[j]-t0.nextDouble()))/maxScore)){
+			if( temp < Math.abs(((double) (scores.get(j)-t0.nextDouble()))/maxScore)){
 				return j;
 			}
 		}
@@ -219,7 +227,7 @@ public class Genetic{
 
 	private void createInitialPopulation(double[] columns) {
 		ArrayList<GeneticEntity> newPopulation0 = new ArrayList<GeneticEntity>(); 
-		GeneticEntity newPopulation[] = new GeneticEntity[this.PopulationSize];
+		GeneticEntity newPopulation[] = new GeneticEntity[Genetic.PopulationSize];
 		
 		for(int i = 0; i < Genetic.PopulationSize; i++){
 			GeneticEntity e = new GeneticEntity(columns);

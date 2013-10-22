@@ -14,7 +14,7 @@ public class Scoring {
 		
 		right = wrong = 0;
 		for (int i = 0; i < potentials.size(); i++){
-			if (potentials.get(i).getTrue() == 1) { //true candidate
+			if (potentials.get(i).getTrue()) { //true candidate
 				right++;
 			}
 			else {
@@ -32,7 +32,7 @@ public class Scoring {
 		int ret[] = new int[potentials.size()];
 		
 		for (int i = 0; i < potentials.size(); i++){
-			ret[i] = potentials.get(i).getTrue();
+			ret[i] = potentials.get(i).getTrue() ? 1 : 0;
 		}
 
 		return ret;
@@ -43,7 +43,7 @@ public class Scoring {
 		score = 0;
 		
 		for (int i = 0; i < potentials.size(); i++){
-			if (potentials.get(i).getTrue() == 1) { //true candidate
+			if (potentials.get(i).getTrue()) { //true candidate
 				score++;
 			}
 			else score--;

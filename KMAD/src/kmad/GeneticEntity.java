@@ -13,6 +13,7 @@ public class GeneticEntity {
 	public int length;
 	private static Random r = new Random();
 	static double mutationChance = 0.2;
+	private int score = 0;
 
 	public GeneticEntity() {
 
@@ -21,6 +22,7 @@ public class GeneticEntity {
 	public GeneticEntity(double delta[]) {
 		this.weights = delta;
 		this.length = delta.length;
+		this.score = 0;
 
 		for (int i = 0; i < this.length; i++) {
 			if (weights[i] == 0) {
@@ -34,6 +36,7 @@ public class GeneticEntity {
 	public GeneticEntity(GeneticEntity p1, GeneticEntity p2, double[] delta) {
 		weights = p1.getWeights();
 		this.length = weights.length;
+		this.score = 0;
 
 		double p2weights[] = p2.getWeights();
 
@@ -62,7 +65,7 @@ public class GeneticEntity {
 		return this.weights;
 	}
 
-	private double scoreCandidate(Candidate c) {
+	private double scoreCandidateHelper(Candidate c) {
 		double score = 0;
 		for (int i = 0; i < this.length; i++) {
 			score += c.getElement(i) * this.weights[i];
@@ -70,34 +73,16 @@ public class GeneticEntity {
 		return score;
 	}
 
-	public int scoreCandidates(ArrayList<Candidate> candidates, File inFile) {
-		System.out.println("start");
-		int score = 0;
-		//ArrayList<Candidate> trueCandidates = new ArrayList<Candidate>();
-
-		Scanner in = null;
-		try {
-			in = new Scanner(inFile);
-		} catch (FileNotFoundException e) {
-			System.out.println("Input File not found");
-			System.exit(1); // can't do anything, exit.
-		}
-		Candidate candidate = null;
-		while(in.hasNextLine()){
-			candidate = new Candidate(in.nextLine(), true);
-			if (this.scoreCandidate(candidate) > GeneticEntity.Threshold) {
-				//trueCandidates.add(candidate);
-				if(candidate.getTrue()){
-					score += 2;
-				} else {
-					score -= 1;
-				}
+	public void scoreCandidate(Candidate candidate) {
+		
+		if (this.scoreCandidateHelper(candidate) > GeneticEntity.Threshold){
+			if(candidate.getTrue()){
+				this.score += 2;
+			} else {
+				score -= 1;
 			}
 		}
-		in.close();
 
-		System.out.println("end");
-		return score;
 	}
 
 	public String toString() {
@@ -111,6 +96,10 @@ public class GeneticEntity {
 
 	public GeneticEntity copy() {
 		return new GeneticEntity(weights, length);
+	}
+
+	public int getScore() {
+		return this.score;
 	}
 
 }

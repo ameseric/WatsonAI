@@ -1,6 +1,7 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * MAIN class for Watson submission. Takes CSV file and passes to the three
+ * implemented ML algorithms for processing. Any candidates that are chosen by more
+ * than 1 algorithm are marked as likely answers and shown.
  */
 package kmad;
 
@@ -12,7 +13,7 @@ import java.lang.Thread;
 
 /**
  * 
- * @author Ian and Joseph, modifications to be made by Eric.
+ * @author Ian and Joseph, modifications made by Eric.
  */
 public class KMAD {
 
@@ -30,26 +31,27 @@ public class KMAD {
 		ArrayList<Candidate> candidates = new ArrayList<Candidate>();
 		
 		
-		//TODO: Changes to pull file input out of wrapper here! - Joseph Doherty
-//		try {
-//			in = new Scanner(inFile);
-//		} catch (FileNotFoundException e) {
-//			System.out.println("Input File not found");
-//			System.exit(1); // can't do anything, exit.
-//		}
-//
-		String line;
-////		int u = 0;
-//		while (in.hasNext()) {
-//			// TODO
-////			u++;
-////			if (u == 100) { // get rid of for real
-////				break;
-////			}
-//			line = in.nextLine();
-//			Candidate c = new Candidate(line, true);
-//			candidates.add(c);
-//		}
+/**		//TODO: Changes to pull file input out of wrapper here! - Joseph Doherty
+		try {
+			in = new Scanner(inFile);
+		} catch (FileNotFoundException e) {
+			System.out.println("Input File not found");
+			System.exit(1); // can't do anything, exit.
+		}
+
+**/		String line;
+/**
+		int u = 0;
+		while (in.hasNext()) {
+			// TODO
+			u++;
+			if (u == 100) { // get rid of for real
+				break;
+			}
+			line = in.nextLine();
+			Candidate c = new Candidate(line, true);
+			candidates.add(c);
+		}**/
 
 		try {
 			in2 = new Scanner(inFile2);
@@ -61,7 +63,6 @@ public class KMAD {
 
 
 
-		double v0;
 		double vals[] = new double[638];
 		double delta[] = new double[319];
 		int i = 0;
@@ -83,14 +84,19 @@ public class KMAD {
 			// System.out.println(delta[i]);
 		}
 
-		// ArrayList<SpecTuple> filteredCandIDThree = new IDThree(candidates);
+		//Call the three approaches.
+		// TODO: Add calling method for ID3
 		Genetic genetic = new Genetic(candidates, delta, inFile);
 		genetic.run();
-		// ArrayList<SpecTuple> filteredCandGenetic = new Genetic(candidates,
-		// delta);
+			//For now, precision is passed in directly as 3 for J48.
+		J48 tree = new J48(inFile, 3, false, false, candidates);
+		J48.process();
+		
 
+		//If your approach directly returns the Cand ArrayList, assign it here.
 		ArrayList<SpecTuple> filteredCandIDThree = new ArrayList<SpecTuple>();
 		ArrayList<SpecTuple> filteredCandGenetic = new ArrayList<SpecTuple>();
+		ArrayList<SpecTuple> filteredCandJ48 = new ArrayList<SpecTuple>();
 
 		/**
 		 * //Start children for different approaches Thread IDThree = new
@@ -102,8 +108,7 @@ public class KMAD {
 		 **/
 
 		// Average and find best scores
-		ArrayList<SpecTuple> averagedCand = analyze(filteredCandGenetic,
-				filteredCandIDThree, filteredCandIDThree);
+		ArrayList<SpecTuple> averagedCand = analyze(filteredCandGenetic,filteredCandIDThree, filteredCandJ48);
 		System.out.println(averagedCand.toString());
 
 	}
@@ -118,22 +123,22 @@ public class KMAD {
 	 * @param Other
 	 * @return finalCands
 	 */
-	private static ArrayList<SpecTuple> analyze(ArrayList<SpecTuple> Genetic,
-			ArrayList<SpecTuple> IDThree, ArrayList<SpecTuple> Other) {
+	private static ArrayList<SpecTuple> analyze(ArrayList<SpecTuple> Genetic,ArrayList<SpecTuple> IDThree, ArrayList<SpecTuple> J48) {
 		ArrayList<SpecTuple> finalCands = new ArrayList<SpecTuple>();
+		
+		//If the sets entered are empty, alert user
+		if(Genetic.isEmpty() || IDThree.isEmpty() || J48.isEmpty())
 
 		finalCands = crossOver(finalCands, Genetic, IDThree);
-		finalCands = crossOver(finalCands, IDThree, Other);
-		finalCands = crossOver(finalCands, Other, Genetic);
+		finalCands = crossOver(finalCands, IDThree, J48);
+		finalCands = crossOver(finalCands, J48, Genetic);
 
 		return finalCands;
 	}
 
 	// Helper function for analyze, checks if a candidate in one ArrayList
 	// exists in the other given ArrayList
-	private static ArrayList<SpecTuple> crossOver(
-			ArrayList<SpecTuple> candidates, ArrayList<SpecTuple> arrayX,
-			ArrayList<SpecTuple> arrayY) {
+	private static ArrayList<SpecTuple> crossOver(ArrayList<SpecTuple> candidates, ArrayList<SpecTuple> arrayX,ArrayList<SpecTuple> arrayY) {
 		SpecTuple current;
 
 		for (int i = 0; i < arrayX.size(); i++) {
@@ -152,8 +157,7 @@ public class KMAD {
 
 	// Helper function for analyze, checks if the given ArrayList contains the
 	// candidate
-	private static boolean contains(ArrayList<SpecTuple> candidates,
-			SpecTuple cand) {
+	private static boolean contains(ArrayList<SpecTuple> candidates,SpecTuple cand) {
 		for (int i = 0; i < candidates.size(); i++) {
 			if (candidates.get(i).ID == cand.ID) {
 				return true;

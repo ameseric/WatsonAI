@@ -127,7 +127,9 @@ public class KMAD {
 		ArrayList<SpecTuple> finalCands = new ArrayList<SpecTuple>();
 		
 		//If the sets entered are empty, alert user
-		if(Genetic.isEmpty() || IDThree.isEmpty() || J48.isEmpty())
+		if(Genetic.isEmpty() || IDThree.isEmpty() || J48.isEmpty()){
+			System.out.println("One or more datasets did not return any candidates!");
+		}
 
 		finalCands = crossOver(finalCands, Genetic, IDThree);
 		finalCands = crossOver(finalCands, IDThree, J48);

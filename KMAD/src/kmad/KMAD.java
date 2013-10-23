@@ -89,7 +89,7 @@ public class KMAD {
 		Genetic genetic = new Genetic(candidates, delta, inFile);
 		genetic.run();
 			//For now, precision is passed in directly as 3 for J48.
-		J48 tree = new J48(inFile, 3, false, false, candidates);
+		J48 tree = new J48(inFile, 3, false, false);
 		J48.process();
 		
 

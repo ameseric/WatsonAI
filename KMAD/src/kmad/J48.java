@@ -28,10 +28,9 @@ public class J48 {
 	static J48DecisionTree tree;
 	
 	//Base constructer, takes a data file location, numeric precision factor, and pre/post pruning options
-	public J48(File data, int precision, boolean pre, boolean post, ArrayList<Candidate> cands){
+	public J48(File data, int precision, boolean pre, boolean post){
 		prepruning = pre;
 		postpruning = post;
-		candidates = cands;
 		inFile = data;
 		this.precision = precision;
 		
@@ -76,7 +75,9 @@ public class J48 {
 	//Takes the training dataset read in by readIn and switches the columns and rows into
 	//a new ArrayList containing each column as an entry. ONLY NEEDED FOR TRAINING DATA.
 	public static void preProcess(){
-		//Ask Ian what the hell we're doing with Candidates
+		//take ArrayList<Candidates> and change to ArrayList<ArrayList<Integer>> ?
+
+		
 	}
 	
 	//Runs a single question through the tree, using actual data (not training)

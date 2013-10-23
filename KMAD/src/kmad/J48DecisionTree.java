@@ -74,7 +74,7 @@ public class J48DecisionTree {
 					}//if we're above the max cutoff, transform to precision-1
 					else if(buildSet.get(i).get(0) > cuts[i][precision-1]){
 						buildSet.get(i).remove(0);
-						buildSet.get(i).add(precision-1);
+						buildSet.get(i).add(precision);
 					}
 				}
 			}
@@ -109,6 +109,10 @@ public class J48DecisionTree {
 		
 	}
 	
+	private void checkClasses(){
+		
+	}
+	
 	private int calcEntropy(){
 		return 1;
 	}
@@ -121,16 +125,10 @@ class Node {
 	Node parent;
 	ArrayList<Integer> T = new ArrayList();
 	ArrayList<ArrayList<Integer>> attributes;
-	private boolean isRoot;
-	private boolean isLeaf = false;
+	boolean type;
 	
 	//Constructor. If the node is to be the root, pass in null as the parent type
 	public Node(Node parent){
-		if(parent == null){
-			isRoot = true;
-		}else{
-			isRoot = false;
-		}
 		this.parent = parent;
 	}
 	
@@ -138,26 +136,31 @@ class Node {
 		int freq = 0;
 		
 		for(int i=0; i<T.size(); i++){
-			if(T.get(i).){
-				
-			}
+			
 		}
 		
 		return 0;
 	}
 	
 	public boolean isRoot(){
-		return isRoot;
+		if(parent == null){
+			return true;
+		}else{
+			return false;
+		}
 	}
 
 	
 	public boolean isLeaf(){
-		return isLeaf;
+		if(child.length == 0){
+			return true;
+		}else{
+			return false;
+		}
 	}
 	
 	public void setLeaf(boolean cl){
 		type = cl;
-		isLeaf = true;
 	}
 	
 	public boolean hasChild(){

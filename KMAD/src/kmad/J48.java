@@ -6,11 +6,13 @@ package kmad;
 
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.Scanner;
 
 /**320 columns
  *
@@ -18,8 +20,8 @@ import java.util.Random;
  */
 public class J48 {
 	static ArrayList<SpecTuple> output = new ArrayList<SpecTuple>();
-	static ArrayList<Candidate> candidates;
-	static ArrayList<ArrayList<Integer>> attributes;
+	static ArrayList<Candidate> candidates = new ArrayList<Candidate>();
+	static ArrayList<ArrayList<Integer>> attributes = new ArrayList<ArrayList<Integer>>();
 	static boolean prepruning;
 	static boolean postpruning;
 	static File inFile;
@@ -56,14 +58,27 @@ public class J48 {
 	
 	//Reads candidates for 1 question
 	public static void readIn(boolean isTraining){
-		//cands will be built here if not passed in, still being discussed with group
-		//Ask Ian for help with IO
-		
+		File currentFile;
+	
 		if(isTraining){
-			//read in File training
+			currentFile = training;
 		}else{
-			//read in File inFile
+			currentFile = inFile;
 		}
+		
+		Scanner in = null;
+		try {
+			in = new Scanner(currentFile);
+		} catch (FileNotFoundException e) {
+			System.out.println("Input File not found");
+			System.exit(1);
+		}
+		Candidate candidate = null;
+		while(in.hasNextLine()){
+			candidates.add(new Candidate(in.nextLine(), true));
+		}
+		System.out.println(candidates.toString());
+		in.close();
 		
 	}
 	
@@ -76,7 +91,13 @@ public class J48 {
 	//a new ArrayList containing each column as an entry. ONLY NEEDED FOR TRAINING DATA.
 	public static void preProcess(){
 		//take ArrayList<Candidates> and change to ArrayList<ArrayList<Integer>> ?
-
+		ArrayList<Double> middleMan = new ArrayList<Double>();
+		
+		for(int i=0; i<candidates.get(0).getSize(); i++){
+			for(int j=0; j<candidates.size(); j++){
+				middleMan.add(candidates.get(j).getElement(i));
+			}
+		}
 		
 	}
 	

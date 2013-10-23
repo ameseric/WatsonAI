@@ -42,5 +42,10 @@ public class Candidate {
 		return true_cand;
 	}
 	
+	//returns the size of the array
+	public int getSize(){
+		return scores.size();
+	}
+	
 
 }

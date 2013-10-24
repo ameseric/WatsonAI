@@ -1,0 +1,80 @@
+package kmad;
+
+import java.util.ArrayList;
+
+public class IDThree implements Runnable{
+//TODO: Make this class
+    ArrayList<Candidate> candidates = new ArrayList<Candidate>();
+    private ID3Node root;
+    private double entropy;
+    
+    public void run(){
+		//put main code here for thread implementation- need to mutate the passed-in arraylist
+		try{Thread.sleep(2000);}
+		catch(InterruptedException e){}
+		System.out.println("Hi! IDThree here!");
+		
+    }
+	
+	public IDThree(ArrayList<Candidate> passedIn){
+		//TODO: fill-in constructor
+		this.candidates = passedIn;
+		this.buildTree();
+		this.calculateEntropy();
+	}
+	
+	class ID3Node {
+		int featureId;
+		ID3Node[] children = new ID3Node[2];
+	}
+	
+	class ID3Leaf extends ID3Node{
+		int label;
+		
+		ID3Leaf(int l){
+			this.label = l;
+		}
+		
+	}
+	
+	private void calculateEntropy(){
+		
+		
+		;
+	}
+	
+	private void buildTree(){
+		
+		int maxId = 0;
+		double maxInfoGain = this.entropy - this.featureEntropy(0);
+		
+		for (int i = 1; i < root.featureId; i++) {
+            double t = entropy - this.featureEntropy(i);
+            if (t > maxInfoGain) {
+                    maxInfoGain = t;
+                    maxId = i;
+            }
+         
+        ID3Node res = new ID3Node();
+        res.featureIdx = maxIdx;
+        DataSetPair p = s.split(new KeepTrueFilter(maxIdx));
+        //System.out.println(p.first.size()+" "+p.second.size());
+        res.children[0] = buildTree(p.first);
+        res.children[1] = buildTree(p.second);
+        return res;
+    }
+		
+		
+	}
+	
+	private double featureEntropy(int index){
+		
+		
+		
+		
+		
+		return 0.0;
+	}
+	
+}
+

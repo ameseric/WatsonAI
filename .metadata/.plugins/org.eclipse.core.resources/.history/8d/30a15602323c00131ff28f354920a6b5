@@ -1,0 +1,281 @@
+package kmad;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.Scanner;
+import java.lang.Double;
+import java.lang.Math;
+
+public class IDThree implements Runnable{
+//TODO: Make this class
+	
+	File rawData;
+	DataSet mainData;
+    ArrayList<Candidate> candidates = new ArrayList<Candidate>();
+    ArrayList<ArrayList<Double>> features = new ArrayList<ArrayList<Double>>();
+    private boolean training;
+    private ID3Node root;
+    private double entropy;
+    private int bestFeatureIndex;
+    private double featureThreshold = 1000;
+    
+    public void run(){
+		//put main code here for thread implementation- need to mutate the passed-in arraylist
+		try{Thread.sleep(2000);}
+		catch(InterruptedException e){}
+		System.out.println("Hi! IDThree here!");
+		
+    }
+	
+	public IDThree(File data, boolean training){
+		//TODO: fill-in constructor
+		this.rawData = data;
+		this.training = training;
+		this.parseData();
+//		this.bestFeatureIndex = findBestFeature();
+//		this.entropy = featureEntropy(this.bestFeatureIndex);
+		this.root = this.buildTree(mainData);
+	}
+	
+	private void parseData(){
+		
+//		File inFile = new File("transposedData_training.txt");
+		Scanner ID3Data = null;
+
+		try {
+			ID3Data = new Scanner(this.rawData);
+		} catch (FileNotFoundException e) {
+			System.out.println("rawData not populated");
+			System.exit(42); // can't do anything, exit.
+		}
+
+		String row;
+		
+		int i = 0;
+		Scanner items;
+		Double questionNumber = new Double(0);
+		Double questionMarker = new Double(0);
+		boolean leaveParse = false;
+		
+		while (ID3Data.hasNextLine()) {
+			
+			row = ID3Data.nextLine();
+			items = new Scanner(row);
+			items.useDelimiter(",");
+			
+			if(i==0){
+				int j = 0;
+				while (items.hasNext()) {
+					String item = items.next();
+					this.features.add(new ArrayList<Double>());
+					this.features.get(j).add(new Double(item));
+					questionNumber = this.features.get(1).get(0);
+					questionMarker = questionNumber;
+					j++;
+				}
+				
+			} else {
+				int j = 0;
+				while (items.hasNext()) {
+					String item = items.next();
+					this.features.get(j).add(new Double(item));
+					questionMarker = this.features.get(1).get(i);
+					j++;
+				}
+				
+				if(questionNumber.compareTo(questionMarker) != 0){
+					//We have a new question!  
+					//Delete last data and we're done parsing!
+					
+					this.features.remove(i);
+					leaveParse = true;
+				}
+			}
+			
+			i++;
+			items.close();
+			
+			if(leaveParse){
+				break;
+			}
+		}
+		
+		ID3Data.close();
+		
+	}
+	
+	class ID3Node {
+		int featureId;
+		ID3Node[] children = new ID3Node[4];
+	}
+	
+	class ID3Leaf extends ID3Node{
+		int label;
+		
+		ID3Leaf(int l){
+			this.label = l;
+		}
+		
+	}
+	
+	private ID3Node buildTree(DataSet set){
+		
+		int maxId = 0;
+		double maxInfoGain = set.entropy - set.featureEntropy(0);
+		
+		for (int i = 1; i < set.featureIndex; i++) {
+            double t = entropy - set.featureEntropy(i);
+            if (t > maxInfoGain) {
+                    maxInfoGain = t;
+                    maxId = i;
+            }
+         
+        ID3Node res = new ID3Node();
+        res.featureId = maxId;
+        ArrayList<DataSet> p = set.split(maxId);
+        //System.out.println(p.first.size()+" "+p.second.size());
+        res.children[0] = buildTree(p.get(0));
+        res.children[1] = buildTree(p.get(1));
+        res.children[2] = buildTree(p.get(2));
+        res.children[3] = buildTree(p.get(3));
+        
+        return res;
+		}
+	
+	}
+	
+	class DataSet{
+		
+	    public double entropy;
+	    public int featureIndex;
+	    public double featureThreshold = 1000;
+	 
+	    ArrayList<ArrayList<Double>> features = new ArrayList<ArrayList<Double>>();
+		
+		DataSet(ArrayList<ArrayList<Double>> passedFeatures, int passedFeatureIndex){
+			this.features = passedFeatures;
+			this.featureIndex = passedFeatureIndex;
+			this.entropy = this.featureEntropy(this.featureIndex);
+		}
+		
+		public ArrayList<DataSet> split(int index){
+			
+			int numOfFeatures = this.features.size();
+			
+			int i;
+			double candidateValue;
+			
+			ArrayList<ArrayList<Double>> negatives = new ArrayList<ArrayList<Double>>();
+			negatives.add(new ArrayList<Double>());
+			ArrayList<ArrayList<Double>> zeroes = new ArrayList<ArrayList<Double>>();
+			zeroes.add(new ArrayList<Double>());
+			ArrayList<ArrayList<Double>> underThresholds = new ArrayList<ArrayList<Double>>();
+			underThresholds.add(new ArrayList<Double>());
+			ArrayList<ArrayList<Double>> overThresholds = new ArrayList<ArrayList<Double>>();
+			overThresholds.add(new ArrayList<Double>());
+			
+			
+			for(i = 2; i < numOfFeatures; i++){
+				candidateValue = this.features.get(index).get(i).doubleValue(); 
+				
+				if(candidateValue < 0.0){
+					negatives.add();
+				} else if(candidateValue == 0.0){
+					zeroes.add();
+				} else if(candidateValue > 0.0 && candidateValue < this.featureThreshold){
+					underThresholds.add();
+				} else if(candidateValue >= this.featureThreshold){
+					overThresholds.add();
+				} else {
+					System.out.println("Candidate Value not negative, zero, less than the threshold, or greater than / equal to the threshold");
+				}
+			}
+			
+			
+			return null;
+		}
+		
+		public int findBestFeature(){
+			
+			int numOfFeatures = this.features.size();
+			
+			int i;
+			int bestFeatureIndex = 2;
+			double lowestEntropy = 2; //Entropy = [0,1], so this will always be replaced
+			double tempEntropy;
+			
+			// The first two indices are not features, so skip them.
+			for(i = 2; i < numOfFeatures; i++){
+				tempEntropy = featureEntropy(i);
+				if(tempEntropy < lowestEntropy){
+					lowestEntropy = tempEntropy;
+					bestFeatureIndex = i;
+				}
+			}
+			
+			return bestFeatureIndex;
+		}
+		
+		public double featureEntropy(int index){
+			
+			int numOfCandidates = this.features.get(0).size();
+			
+			int i;
+			int countNegatives = 0;
+			int countZeroes = 0;
+			int countUnderThreshold = 0;
+			int countOverThreshold = 0;
+			double candidateValue;
+			
+			for(i = 0; i < numOfCandidates; i++){
+				candidateValue = this.features.get(index).get(i).doubleValue(); 
+				
+				if(candidateValue < 0.0){
+					countNegatives++;
+				} else if(candidateValue == 0.0){
+					countZeroes++;
+				} else if(candidateValue > 0.0 && candidateValue < this.featureThreshold){
+					countUnderThreshold++;
+				} else if(candidateValue >= this.featureThreshold){
+					countOverThreshold++;
+				} else {
+					System.out.println("Candidate Value not negative, zero, less than the threshold, or greater than / equal to the threshold");
+				}
+			}
+			
+			int totalSetSize = countNegatives + countZeroes + countUnderThreshold + countOverThreshold;
+			
+			double scoreNegatives = 0;
+			double scoreZeroes = 0;
+			double scoreUnderThreshold = 0;
+			double scoreOverThreshold = 0;
+			
+			if(countNegatives > 0)
+				scoreNegatives = -(countNegatives/totalSetSize)*(Math.log((double)countNegatives/totalSetSize)/Math.log(2.0));
+			else
+				scoreNegatives = 0;
+			
+			if(countNegatives > 0)
+				scoreZeroes = -(countZeroes/totalSetSize)*(Math.log((double)countZeroes/totalSetSize)/Math.log(2.0));
+			else
+				scoreZeroes = 0;
+			
+			if(countNegatives > 0)
+				scoreUnderThreshold = -(countUnderThreshold/totalSetSize)*(Math.log((double)countUnderThreshold/totalSetSize)/Math.log(2.0));
+			else
+				scoreUnderThreshold = 0;
+			
+			if(countNegatives > 0)
+				scoreOverThreshold = -(countOverThreshold/totalSetSize)*(Math.log((double)countOverThreshold/totalSetSize)/Math.log(2.0));
+			else
+				scoreOverThreshold = 0;
+			
+			return (scoreNegatives + scoreZeroes + scoreUnderThreshold + scoreOverThreshold);
+		}
+
+	}
+	
+	
+}
+

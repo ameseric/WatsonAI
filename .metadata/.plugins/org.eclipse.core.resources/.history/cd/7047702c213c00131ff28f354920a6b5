@@ -1,0 +1,169 @@
+package kmad;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.Scanner;
+import java.lang.Double;
+
+public class IDThree implements Runnable{
+//TODO: Make this class
+	
+	File rawData;
+    ArrayList<Candidate> candidates = new ArrayList<Candidate>();
+    ArrayList<ArrayList<Double>> features = new ArrayList<ArrayList<Double>>();
+    private boolean training;
+    private ID3Node root;
+    private double entropy;
+    private int bestFeatureIndex;
+    
+    public void run(){
+		//put main code here for thread implementation- need to mutate the passed-in arraylist
+		try{Thread.sleep(2000);}
+		catch(InterruptedException e){}
+		System.out.println("Hi! IDThree here!");
+		
+    }
+	
+	public IDThree(File data, boolean training){
+		//TODO: fill-in constructor
+		this.rawData = data;
+		this.training = training;
+		this.parseData();
+		this.root = buildTree();
+		this.bestFeatureIndex = findBestFeature();
+		this.entropy = featureEntropy(this.bestFeatureIndex);
+	}
+	
+	private void parseData(){
+		
+//		File inFile = new File("transposedData_training.txt");
+		Scanner ID3Data = null;
+
+		try {
+			ID3Data = new Scanner(this.rawData);
+		} catch (FileNotFoundException e) {
+			System.out.println("rawData not populated");
+			System.exit(42); // can't do anything, exit.
+		}
+
+		String row;
+		
+		int i = 0;
+		Scanner items;
+		Double questionNumber = new Double(0);
+		Double questionMarker = new Double(0);
+		boolean leaveParse = false;
+		
+		while (ID3Data.hasNextLine()) {
+			
+			row = ID3Data.nextLine();
+			items = new Scanner(row);
+			items.useDelimiter(",");
+			
+			if(i==0){
+				int j = 0;
+				while (items.hasNext()) {
+					String item = items.next();
+					features.add(new ArrayList<Double>());
+					features.get(j).add(new Double(item));
+					questionNumber = features.get(1).get(0);
+					questionMarker = questionNumber;
+					j++;
+				}
+				
+			} else {
+				int j = 0;
+				while (items.hasNext()) {
+					String item = items.next();
+					features.get(j).add(new Double(item));
+					questionMarker = features.get(1).get(i);
+					j++;
+				}
+				
+				if(questionNumber.compareTo(questionMarker) != 0){
+					//We have a new question!  
+					//Delete last data and we're done parsing!
+					
+					features.remove(i);
+					leaveParse = true;
+				}
+			}
+			
+			i++;
+			items.close();
+			
+			if(leaveParse){
+				break;
+			}
+		}
+		
+		ID3Data.close();
+		
+	}
+	
+	class ID3Node {
+		int featureId;
+		ID3Node[] children = new ID3Node[2];
+	}
+	
+	class ID3Leaf extends ID3Node{
+		int label;
+		
+		ID3Leaf(int l){
+			this.label = l;
+		}
+		
+	}
+	
+	private int findBestFeature(){
+		
+		int numOfFeatures = this.features.size();
+		
+		int i;
+		double lowestEntropy = 2;
+		int bestFeatureIndex;
+		for(i = 0; i < numOfFeatures; i++){
+			
+		}
+		
+		return 0;
+	}
+	
+	private double featureEntropy(int index){
+		
+		int numOfCandidates = candidates.size();
+		
+		
+		
+		return 0.0;
+	}
+
+	
+	private ID3Node buildTree(){
+		
+		int maxId = 0;
+		double maxInfoGain = this.entropy - this.featureEntropy(0);
+		
+		for (int i = 1; i < root.featureId; i++) {
+            double t = entropy - this.featureEntropy(i);
+            if (t > maxInfoGain) {
+                    maxInfoGain = t;
+                    maxId = i;
+            }
+         
+        ID3Node res = new ID3Node();
+        res.featureId = maxId;
+        DataSetPair p = s.split(new KeepTrueFilter(maxIdx));
+        //System.out.println(p.first.size()+" "+p.second.size());
+        res.children[0] = buildTree(p.first);
+        res.children[1] = buildTree(p.second);
+        return res;
+    }
+		
+		
+	}
+	
+	
+}
+

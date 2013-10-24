@@ -1,5 +1,17 @@
 /*
  * Structure for the decision tree used in the J48 algorithm.
+ * 
+ * Overall format:
+ * 
+ * Dataset T:  T1, T2, T3... TN.
+ * 
+ * Each Ti is a set of samples S.
+ * 
+ * Set S: S1, S2, S3...
+ * 
+ * Each Si is a sample. In this case, samples are candidate scores.
+ * 
+ * 
  */
 package kmad;
 
@@ -91,7 +103,6 @@ public class J48DecisionTree {
 	 * 2) Calculate entropy for each attribute set, pick one with highest gain.
 	 * 3) Building from that, grow one child node for each attribute value and send the T associated with it as a set to the child(ren)
 	 * 4) 
-	 * TODO: Finish buildTree.
 	 */
 	private void buildTree(Node N){
 		
@@ -105,7 +116,7 @@ public class J48DecisionTree {
 		}
 		
 		//Base case 2: More than 1 class, so pick the best attribute to split along
-		N.S = pickAttributeSplit(N.T);
+		N.S = pickAttributeSplit(N.T, precision);
 		
 		//Remove redundant sample set from N.T
 		N.T.remove(N.S);
@@ -120,6 +131,7 @@ public class J48DecisionTree {
 		for(int k=0; k<N.child.length; k++){
 			buildTree(N.child[k]);
 		}
+		
 		
 	}
 	
@@ -165,20 +177,20 @@ public class J48DecisionTree {
 	
 	//Takes in the attribute columns, and finds which has the highest gain.
 	//Returns the index of the column with highest entropy gain.
-	private ArrayList<Integer> pickAttributeSplit(ArrayList<ArrayList<Integer>> attributes){
-		double baseClassEntropy = calcClassEntropy(attributes.get(attributes.size()-1));
+	private ArrayList<Integer> pickAttributeSplit(ArrayList<ArrayList<Integer>> T, int precision){
+		double baseClassEntropy = calcClassEntropy(T.get(T.size()-1));
 		double attrEntropy;
 		double gain = 0;
 		int index = -1;
 		
-		for(int j=0; j<attributes.size(); j++){
-			attrEntropy = calcAttrEntropy(attributes);
+		for(int j=0; j<T.size(); j++){
+			attrEntropy = calcAttrEntropy(T.get(j), T.get(T.size()-1), precision);
 			if((baseClassEntropy - attrEntropy) > gain){
 				gain = baseClassEntropy - attrEntropy;
 				index = j;
 			}
 		}		
-		return attributes.get(index);
+		return T.get(index);
 	}
 	
 	//Calculate the Entropy of the node due to the class division.
@@ -187,7 +199,7 @@ public class J48DecisionTree {
 		double sum = 0;
 		
 		for(int k=0; k<2; k++){
-			sum += -(frequency(tf, k)/tf.size()) * (Math.log(frequency(tf, k) / tf.size()) / Math.log(frequency(tf, k) / tf.size()));
+			sum += -(frequency(tf, k)/tf.size()) * (Math.log(frequency(tf, k) / tf.size()) / Math.log(2));
 		}
 		
 		System.out.println(sum);
@@ -196,11 +208,24 @@ public class J48DecisionTree {
 	}
 	
 	//Calculate the Entropy of the node due to attribute division.
-	private int calcAttrEntropy(ArrayList<ArrayList<Integer>> column){
+	private int calcAttrEntropy(ArrayList<Integer> S, ArrayList<Integer> classTypes, int precision){
+		int sum = 0;
+		ArrayList<ArrayList<Integer>> tf = new ArrayList<>();
 		
-		//TODO: Fill-in entropy calculation for base/sub-T
+		//Build tf array for each attribute grouping
+		for(int j=0; j<=precision; j++){
+			for(int k=0; k<S.size(); k++){
+				if(S.get(k) == j){
+					tf.get(j).add( classTypes.get(k) );
+				}
+			}
+		}
 		
-		return 1;
+		for(int i=0; i<=precision; i++){
+			sum += (frequency(S, i) / S.size()) * calcClassEntropy(tf.get(i));
+		}
+		
+		return sum;
 	}
 	
 	private int frequency(ArrayList<Integer> d, int classType){

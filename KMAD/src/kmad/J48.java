@@ -19,9 +19,9 @@ import java.util.Scanner;
  * @author amesen
  */
 public class J48 {
-	static ArrayList<SpecTuple> output = new ArrayList<SpecTuple>();
-	static ArrayList<Candidate> candidates = new ArrayList<Candidate>();
-	static ArrayList<ArrayList<Integer>> attributes = new ArrayList<ArrayList<Integer>>();
+	static ArrayList<SpecTuple> output = new ArrayList<>();
+	static ArrayList<Candidate> candidates = new ArrayList<>();
+	static ArrayList<ArrayList<Double>> attributes = new ArrayList<>();
 	static boolean prepruning;
 	static boolean postpruning;
 	static File inFile;
@@ -39,7 +39,7 @@ public class J48 {
 	}
 	
 	public static void process(){
-		//read in first question set, which will be training (not actual file format, check)
+		//read in training data
 		readIn(true);
 		
 		//Preprocess the training data so that the tree can be built
@@ -73,7 +73,6 @@ public class J48 {
 			System.out.println("Input File not found");
 			System.exit(1);
 		}
-		Candidate candidate = null;
 		while(in.hasNextLine()){
 			candidates.add(new Candidate(in.nextLine(), true));
 		}
@@ -89,16 +88,28 @@ public class J48 {
 	
 	//Takes the training dataset read in by readIn and switches the columns and rows into
 	//a new ArrayList containing each column as an entry. ONLY NEEDED FOR TRAINING DATA.
+	//Adds an additional column to the end of attributes containing the true/false values
 	public static void preProcess(){
-		//take ArrayList<Candidates> and change to ArrayList<ArrayList<Integer>> ?
-		ArrayList<Double> middleMan = new ArrayList<Double>();
+		ArrayList<Double> middleMan = new ArrayList<>();
+		Double classType;
 		
 		for(int i=0; i<candidates.get(0).getSize(); i++){
 			for(int j=0; j<candidates.size(); j++){
 				middleMan.add(candidates.get(j).getElement(i));
 			}
+			attributes.add(middleMan);
+			middleMan = new ArrayList<>();			
 		}
 		
+		for(int k=0; k<candidates.size(); k++){
+			if(candidates.get(k).getTrue()){
+				classType = 1.0;
+			}else{
+				classType = 0.0;
+			}
+			middleMan.add(classType);
+		}
+		attributes.add(middleMan);
 	}
 	
 	//Runs a single question through the tree, using actual data (not training)

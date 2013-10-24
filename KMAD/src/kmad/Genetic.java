@@ -10,7 +10,6 @@ import java.util.Random;
 import java.util.Scanner;
 
 public class Genetic{
-//TODO: Make this class
 	static final int PopulationSize = 100;
 	static final int NumberOfGenerations = 2000;
     ArrayList<Candidate> candidates = new ArrayList<Candidate>();  
@@ -25,7 +24,6 @@ public class Genetic{
 	
     
 	public Genetic(ArrayList<Candidate> passedIn, double delta[], File inFile){
-		//TODO: fill-in constructor
 		candidates = passedIn;
 		generation = 0;
 		this.delta = delta;
@@ -81,7 +79,7 @@ public class Genetic{
 ////			out.write("This is a sample text1");
 ////			out.close();
 //		} catch (IOException e) {
-//			// TODO Auto-generated catch block
+//			// Auto-generated catch block
 //			e.printStackTrace();
 //		}
 		

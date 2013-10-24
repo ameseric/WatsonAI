@@ -10,9 +10,7 @@ import java.util.ArrayList;
  * @author amesen
  */
 public class J48DecisionTree {
-	//TODO: Fill in class ASAP
 	Node root = new Node(null);
-	ArrayList<ArrayList<Integer>> buildSet = new ArrayList<>();
 	ArrayList<ArrayList<Double>> initialSet;
 	int precision;
 	double[][] cuts;
@@ -23,7 +21,7 @@ public class J48DecisionTree {
 		cuts = new double[passedIn.size()][precision];
 		
 		//PrecisionMeasure and PrecisionCut below are both a part of the preprocessor for the training dataset.
-		//Take the given attributes and pick the cutoff value based on the precision value.
+		//Take the given T and pick the cutoff value based on the precision value.
 		precisionMeasure();
 		
 		//Divide up the sets according to the afore-chosen cuts
@@ -67,10 +65,10 @@ public class J48DecisionTree {
 				for(int l=0; l<precision; l++){
 					//if we're below the cutoff, transform to l
 					if(initialSet.get(i).get(0) < cuts[i][l]){
-						buildSet.get(i).add(l);
+						root.T.get(i).add(l);
 					}//if we're above the max cutoff, transform to precision
 					else if(initialSet.get(i).get(0) > cuts[i][precision-1]){
-						buildSet.get(i).add(precision);
+						root.T.get(i).add(precision);
 					}
 				}
 			}
@@ -83,7 +81,7 @@ public class J48DecisionTree {
 	//I probably won't fill this in until after first milestone- for now, examining the tree built by the
 	//dataset is all we need to evaluate the efficiency (Since the training set is small).
 	public SpecTuple analyze( ArrayList<Candidate> question ){
-		//TODO: Fill in	
+		//TODO: AM, Fill in analyze function
 		
 		return new SpecTuple(1,2);
 	}
@@ -91,25 +89,33 @@ public class J48DecisionTree {
 	//Used by the constructor to build a decision tree using the preprocessed training dataset. RECURSIVE.
 	/**1) Check: How many classes are present? If only one, end with class leaf.
 	 * 2) Calculate entropy for each attribute set, pick one with highest gain.
-	 * 3) Building from that, grow one child node for each attribute value and send the attributes associated with it as a set to the child(ren)
+	 * 3) Building from that, grow one child node for each attribute value and send the T associated with it as a set to the child(ren)
 	 * 4) 
-	 * 
+	 * TODO: Finish buildTree.
 	 */
 	private void buildTree(Node N){
 		
 		//Base case 1: are all classes the same?
-		if(sameClass() == 1){
+		if(sameClass(N) == 1){
 			N.type = true;
 			return;
-		}else if(sameClass() == 0){
+		}else if(sameClass(N) == 0){
 			N.type = false;
 			return;
 		}
 		
 		//Base case 2: More than 1 class, so pick the best attribute to split along
-		N.T = pickAttributeSplit(N.attributes);
+		N.S = pickAttributeSplit(N.T);
 		
-		setChildren();
+		//Remove redundant sample set from N.T
+		N.T.remove(N.S);
+		
+		//Initialize the children for N, and copy over their T sets of sample sets.
+		setChildren(N, precision+1);
+		
+		//Now that each child has their revised copy of the attribute columns,
+		//delete the parent's copy (N.T) to save space.
+		N.T = null;
 		
 		for(int k=0; k<N.child.length; k++){
 			buildTree(N.child[k]);
@@ -117,17 +123,41 @@ public class J48DecisionTree {
 		
 	}
 	
+	private void setChildren(Node N, int number){
+		Node currentChild;
+		
+		//TODO: AM, change to account for dynamic precision
+		
+		//Loop for each child
+		for(int j=0; j<number; j++){
+			N.child[j] = new Node(N);
+			currentChild = N.child[j];
+			
+			//Loop for each element in S
+			for(int i=0; i<N.S.size(); i++){
+				if(N.S.get(i) == j){
+					
+					//If the child and element share their value, take element index, loop through T and grab associate values
+					for(int k=0; k<N.T.size(); k++){
+						currentChild.T.get(k).add(N.T.get(k).get(i));
+					}
+				}
+			}
+		}
+		
+	}
+	
 	//Check the last attribute column, which stores the class t/f values.
 	//Cycle through and compare each- if all the same, return true.
-	private int sameClass(){
-		int index = buildSet.size();
+	private int sameClass(Node N){
+		int index = N.T.size();
 		int type = -1;
 		
-		for(int k=0; k<buildSet.get(index-2).size(); k++){
-			if(buildSet.get(index-1).get(k) != buildSet.get(index-1).get(k+1)){
+		for(int k=0; k<N.T.get(index-2).size(); k++){
+			if(N.T.get(index-1).get(k) != N.T.get(index-1).get(k+1)){
 				return type;
 			}
-			type = buildSet.get(index-1).get(k);
+			type = N.T.get(index-1).get(k);
 			
 		}
 		return type;
@@ -168,7 +198,7 @@ public class J48DecisionTree {
 	//Calculate the Entropy of the node due to attribute division.
 	private int calcAttrEntropy(ArrayList<ArrayList<Integer>> column){
 		
-		//TODO: FINISH!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		//TODO: Fill-in entropy calculation for base/sub-T
 		
 		return 1;
 	}
@@ -191,8 +221,8 @@ public class J48DecisionTree {
 class Node {
 	Node child[];
 	Node parent;
-	ArrayList<Integer> T = new ArrayList();
-	ArrayList<ArrayList<Integer>> attributes;
+	ArrayList<Integer> S = new ArrayList();
+	ArrayList<ArrayList<Integer>> T = new ArrayList<>();
 	boolean type;
 	
 	//Constructor. If the node is to be the root, pass in null as the parent type
@@ -203,7 +233,7 @@ class Node {
 	public int frequency(boolean classType){
 		int freq = 0;
 		
-		for(int i=0; i<T.size(); i++){
+		for(int i=0; i<S.size(); i++){
 			
 		}
 		

@@ -50,10 +50,10 @@ public class J48 {
 		
 		//Loop for each question, reading in only the candidates for the
 		//current question.
-		for(int i=0; i<8; i++){
+		/*for(int i=0; i<8; i++){
 			readIn(false);
 			processSingleQuestion();
-		}
+		}*/
 	}
 	
 	//Reads candidates for 1 question

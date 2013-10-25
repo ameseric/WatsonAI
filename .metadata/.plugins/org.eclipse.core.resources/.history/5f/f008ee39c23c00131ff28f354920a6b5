@@ -21,7 +21,7 @@ public class IDThree implements Runnable{
     private ID3Node root;
     private double featureThreshold = 1000;
     private boolean training = false;
-    
+	 
     /**
 	 * Constructs an ID3 ranking system
 	 * 
@@ -36,7 +36,7 @@ public class IDThree implements Runnable{
 			mainData = new DataSet(features, bestFeatureIndex);
 			this.root = buildTree(mainData);
 		} else {
-			boolean temp = findIsCandidateAnswer(features.get(0));
+			
 		}
 	    
 	}
@@ -127,30 +127,6 @@ public class IDThree implements Runnable{
 	}
 	
 	/**
-	 * 
-	 * @param candidate
-	 * @return true if the candidate is an answer
-	 */
-	private boolean findIsCandidateAnswer(ArrayList<Double> candidate){
-		
-		ID3Node root = this.root;
-		
-		ID3Node node;
-		ArrayList<Double> newCandidate;
-		
-		int featureIndex = root.featureId;
-		
-		boolean isAnswer = findIsCandidateAnswerRecursive(newCandidate, node);
-		
-		return isAnswer;
-	}
-	
-	private boolean findIsCandidateAnswerRecursive(ArrayList<Double> candidate, ID3Node node){
-		
-		return false;
-	}
-	
-	/**
 	 * A single node for ID3 trees.
 	 * 
 	 * @author Wesley McCullough
@@ -168,9 +144,9 @@ public class IDThree implements Runnable{
 	 *
 	 */
 	class ID3Leaf extends ID3Node{
-		boolean label;
+		int label;
 		
-		ID3Leaf(boolean l){
+		ID3Leaf(int l){
 			this.label = l;
 		}
 		
@@ -184,7 +160,7 @@ public class IDThree implements Runnable{
 	  */
 	private ID3Node buildTree(DataSet set){
 		if (set.isEmpty() || set.allSameLabel())
-            return new ID3Leaf(set.getLabel());
+            return new ID3Leaf(set.getMostFrequentLabel());
 
 		int maxId = 0;
 		double maxInfoGain = set.entropy - set.featureEntropy(0);
@@ -256,48 +232,48 @@ public class IDThree implements Runnable{
             return labelSet.size() == 1;
 		}
 		
-		public boolean getLabel(){
+		public int getMostFrequentLabel(){
 
 			int numOfCandidates = this.features.get(0).size();
 			
-//			int i;
-//			int countNegatives = 0;
-//			int countZeroes = 0;
-//			int countUnderThreshold = 0;
-//			int countOverThreshold = 0;
-//			double candidateValue;
-//			
-//			for(i = 0; i < numOfCandidates; i++){
-//				candidateValue = this.features.get(i).get(this.featureIndex).doubleValue(); 
-//				
-//				if(candidateValue < 0.0){
-//					countNegatives++;
-//				} else if(candidateValue == 0.0){
-//					countZeroes++;
-//				} else if(candidateValue > 0.0 && candidateValue < this.featureThreshold){
-//					countUnderThreshold++;
-//				} else if(candidateValue >= this.featureThreshold){
-//					countOverThreshold++;
-//				} else {
-//					System.out.println("FeatureEntropy: Candidate Value not negative, zero, less than the threshold, or greater than / equal to the threshold");
-//				}
-//			}
-//			
-//			int label = 0;
-//			
-//			if(countNegatives >= countZeroes && countNegatives >= countUnderThreshold && countNegatives >= countOverThreshold){
-//				label = 0;
-//			}else if(countZeroes >= countNegatives && countZeroes >= countUnderThreshold && countZeroes >= countOverThreshold){
-//				label = 1;
-//			}else if(countUnderThreshold >= countNegatives && countUnderThreshold >= countZeroes && countUnderThreshold >= countOverThreshold){
-//				label = 2;
-//			}else if(countOverThreshold >= countNegatives && countOverThreshold >= countZeroes && countOverThreshold >= countUnderThreshold){
-//				label = 3;
-//			} else {
-//				System.out.println("getMostFrequentLabels: Candidate Value not negative, zero, less than the threshold, or greater than / equal to the threshold");
-//			}
+			int i;
+			int countNegatives = 0;
+			int countZeroes = 0;
+			int countUnderThreshold = 0;
+			int countOverThreshold = 0;
+			double candidateValue;
 			
-			return false;
+			for(i = 0; i < numOfCandidates; i++){
+				candidateValue = this.features.get(i).get(this.featureIndex).doubleValue(); 
+				
+				if(candidateValue < 0.0){
+					countNegatives++;
+				} else if(candidateValue == 0.0){
+					countZeroes++;
+				} else if(candidateValue > 0.0 && candidateValue < this.featureThreshold){
+					countUnderThreshold++;
+				} else if(candidateValue >= this.featureThreshold){
+					countOverThreshold++;
+				} else {
+					System.out.println("FeatureEntropy: Candidate Value not negative, zero, less than the threshold, or greater than / equal to the threshold");
+				}
+			}
+			
+			int label = 0;
+			
+			if(countNegatives >= countZeroes && countNegatives >= countUnderThreshold && countNegatives >= countOverThreshold){
+				label = 0;
+			}else if(countZeroes >= countNegatives && countZeroes >= countUnderThreshold && countZeroes >= countOverThreshold){
+				label = 1;
+			}else if(countUnderThreshold >= countNegatives && countUnderThreshold >= countZeroes && countUnderThreshold >= countOverThreshold){
+				label = 2;
+			}else if(countOverThreshold >= countNegatives && countOverThreshold >= countZeroes && countOverThreshold >= countUnderThreshold){
+				label = 3;
+			} else {
+				System.out.println("getMostFrequentLabels: Candidate Value not negative, zero, less than the threshold, or greater than / equal to the threshold");
+			}
+			
+			return label;
 		}
 		
 		public ArrayList<DataSet> split(int index){

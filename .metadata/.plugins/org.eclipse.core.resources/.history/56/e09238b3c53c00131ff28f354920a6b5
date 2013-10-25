@@ -184,7 +184,7 @@ public class IDThree implements Runnable{
 	  */
 	private ID3Node buildTree(DataSet set){
 		if (set.isEmpty() || set.allSameLabel())
-            return new ID3Leaf(set.getLabel());
+            return new ID3Leaf(set.getMostFrequentLabel());
 
 		int maxId = 0;
 		double maxInfoGain = set.entropy - set.featureEntropy(0);
@@ -256,7 +256,7 @@ public class IDThree implements Runnable{
             return labelSet.size() == 1;
 		}
 		
-		public boolean getLabel(){
+		public boolean getMostFrequentLabel(){
 
 			int numOfCandidates = this.features.get(0).size();
 			

@@ -19,7 +19,7 @@ import java.util.Scanner;
  * @author amesen
  */
 public class J48 {
-	static ArrayList<SpecTuple> output = new ArrayList<>();
+	//static ArrayList<SpecTuple> output = new ArrayList<>();
 	static ArrayList<Candidate> candidates = new ArrayList<>();
 	static ArrayList<ArrayList<Double>> attributes = new ArrayList<>();
 	static boolean prepruning;
@@ -42,8 +42,12 @@ public class J48 {
 		//read in training data
 		readIn(true);
 		
+		//System.out.println("Hi!" + candidates.get(1).getElement(15) );
+		
 		//Preprocess the training data so that the tree can be built
 		preProcess();
+		attributes.remove(0);
+		attributes.remove(0);
 		
 		//Build a decision tree based on the given training data
 		buildDecisionTree();

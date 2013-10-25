@@ -38,9 +38,11 @@ public class J48DecisionTree {
 		
 		//Divide up the sets according to the afore-chosen cuts
 		precisionCut();
+		System.out.println(root.T.get(root.T.size()-1));
 		
 		//Use the now-divided sets to build the decision tree
 		buildTree(root);
+		System.out.println("Hi!");
 		
 		//Done! Ready for candidates.
 		
@@ -53,7 +55,7 @@ public class J48DecisionTree {
 		double max=0, min=999999999;
 		
 		//loop through to find max and min
-		for(int i=0; i<initialSet.size(); i++){
+		for(int i=0; i<initialSet.size()-1; i++){
 			for(int j=0; j<initialSet.get(i).size(); j++){
 				if(initialSet.get(i).get(j) > max){
 					max = initialSet.get(i).get(j);
@@ -61,32 +63,53 @@ public class J48DecisionTree {
 					min = initialSet.get(i).get(j);
 				}
 			}
+			
+			//Check if range is 0, if so, what?
+			if(max == min){
+				//do something
+			}
+			
 			//take max and min for the current attribute set and add the cuts to the end of the arraylist
 			for(int l=0; l<precision; l++){
 				cuts[i][l] = ( (((max - min)/(precision+1)) * (l+1)) + min );
 			}
+			max = 0; min = 999999999;
 		}
 	}
 	
 	//Takes the calculated cut points and classifies all values falling within the proper range
 	private void precisionCut(){
-		int size = initialSet.get(0).size() - precision;
+		int size = initialSet.get(0).size()-1;
 		
 		for(int i=0; i<initialSet.size(); i++){
+			root.T.add(new ArrayList<Integer>());
 			for(int k=0; k<size; k++){
+				
 				for(int l=0; l<precision; l++){
 					//if we're below the cutoff, transform to l
-					if(initialSet.get(i).get(0) < cuts[i][l]){
+					if(initialSet.get(i).get(k) < cuts[i][l]){
 						root.T.get(i).add(l);
+						break;
 					}//if we're above the max cutoff, transform to precision
-					else if(initialSet.get(i).get(0) > cuts[i][precision-1]){
+					else if(initialSet.get(i).get(k) >= cuts[i][precision-1]){
 						root.T.get(i).add(precision);
+						break;
 					}
 				}
+				
+			}
+		}
+		root.T.add(new ArrayList());
+		for(int p=0; p<initialSet.get(0).size(); p++){
+			if(initialSet.get(initialSet.size()-1).get(p) == 1){
+				root.T.get( root.T.size()-1 ).add(1);
+			}else{
+				root.T.get( root.T.size()-1 ).add(0);
 			}
 		}
 		
 		initialSet = null;
+
 		
 	}
 	
@@ -105,12 +128,15 @@ public class J48DecisionTree {
 	 * 4) 
 	 */
 	private void buildTree(Node N){
+		int classCheck = sameClass(N);
 		
 		//Base case 1: are all classes the same?
-		if(sameClass(N) == 1){
+		if(classCheck == 1){
+			System.out.println("Hit base true case!");
 			N.type = true;
 			return;
-		}else if(sameClass(N) == 0){
+		}else if(classCheck == 0){
+			System.out.println("Hit base false case!");
 			N.type = false;
 			return;
 		}
@@ -141,6 +167,7 @@ public class J48DecisionTree {
 		//TODO: AM, change to account for dynamic precision
 		
 		//Loop for each child
+		N.child = new Node[number];
 		for(int j=0; j<number; j++){
 			N.child[j] = new Node(N);
 			currentChild = N.child[j];
@@ -165,19 +192,20 @@ public class J48DecisionTree {
 		int index = N.T.size();
 		int type = -1;
 		
-		for(int k=0; k<N.T.get(index-2).size(); k++){
+		for(int k=0; k<N.T.get(index-1).size()-1; k++){
 			if(N.T.get(index-1).get(k) != N.T.get(index-1).get(k+1)){
+				System.out.println("Rejected!");
 				return type;
 			}
-			type = N.T.get(index-1).get(k);
-			
 		}
+		type = N.T.get(index-1).get(0);
 		return type;
 	}
 	
 	//Takes in the attribute columns, and finds which has the highest gain.
 	//Returns the index of the column with highest entropy gain.
 	private ArrayList<Integer> pickAttributeSplit(ArrayList<ArrayList<Integer>> T, int precision){
+
 		double baseClassEntropy = calcClassEntropy(T.get(T.size()-1));
 		double attrEntropy;
 		double gain = 0;
@@ -187,6 +215,7 @@ public class J48DecisionTree {
 			attrEntropy = calcAttrEntropy(T.get(j), T.get(T.size()-1), precision);
 			if((baseClassEntropy - attrEntropy) > gain){
 				gain = baseClassEntropy - attrEntropy;
+				System.out.println(gain);
 				index = j;
 			}
 		}		
@@ -195,15 +224,17 @@ public class J48DecisionTree {
 	
 	//Calculate the Entropy of the node due to the class division.
 	private double calcClassEntropy(ArrayList<Integer> tf){
-		int freq;
+		double freq, log1, log2;
 		double sum = 0;
 		
 		for(int k=0; k<2; k++){
-			sum += -(frequency(tf, k)/tf.size()) * (Math.log(frequency(tf, k) / tf.size()) / Math.log(2));
+			if(tf.size() > 0 && frequency(tf, k) > 0){
+				freq = frequency(tf, k);
+				log1 = Math.log(freq/tf.size());
+				log2 = Math.log(2);
+				sum += -((freq/tf.size()) * ( log1 / log2 ));
+			}
 		}
-		
-		System.out.println(sum);
-		
 		return sum;
 	}
 	
@@ -214,6 +245,7 @@ public class J48DecisionTree {
 		
 		//Build tf array for each attribute grouping
 		for(int j=0; j<=precision; j++){
+			tf.add(new ArrayList<Integer>());
 			for(int k=0; k<S.size(); k++){
 				if(S.get(k) == j){
 					tf.get(j).add( classTypes.get(k) );
@@ -224,7 +256,7 @@ public class J48DecisionTree {
 		for(int i=0; i<=precision; i++){
 			sum += (frequency(S, i) / S.size()) * calcClassEntropy(tf.get(i));
 		}
-		
+		System.out.println(sum);
 		return sum;
 	}
 	

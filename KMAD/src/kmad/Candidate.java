@@ -7,6 +7,8 @@ public class Candidate {
 	private ArrayList<Float> scores;
 	private boolean training;
 	private boolean true_cand = false;
+	private int candidateID;
+	private float questionID;
 	
 	public Candidate(String scoreString, Boolean training){
 		scores = new ArrayList<Float>();
@@ -14,6 +16,8 @@ public class Candidate {
 		Scanner scoreScanner = new Scanner(scoreString);
 		scoreScanner.useDelimiter(",");
 		
+		this.candidateID = Integer.parseInt(scoreScanner.next());
+		this.questionID = Float.parseFloat(scoreScanner.next());
 		while(scoreScanner.hasNext()){
 			
 			temp = scoreScanner.next();
@@ -45,6 +49,10 @@ public class Candidate {
 	//returns the size of the array
 	public int getSize(){
 		return scores.size();
+	}
+	
+	public int getID(){
+		return this.candidateID;
 	}
 	
 

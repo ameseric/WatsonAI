@@ -13,7 +13,8 @@ public class GeneticEntity {
 	public int length;
 	private static Random r = new Random();
 	static double mutationChance = 0.2;
-	private int score = 0;
+	int numCorrect = 0;
+	int numWrong = 0;
 
 	public GeneticEntity() {
 
@@ -22,7 +23,8 @@ public class GeneticEntity {
 	public GeneticEntity(double delta[]) {
 		this.weights = delta;
 		this.length = delta.length;
-		this.score = 0;
+		this.numCorrect = 0;
+		this.numWrong = 0;
 
 		for (int i = 0; i < this.length; i++) {
 			if (weights[i] == 0) {
@@ -36,7 +38,8 @@ public class GeneticEntity {
 	public GeneticEntity(GeneticEntity p1, GeneticEntity p2, double[] delta) {
 		weights = p1.getWeights();
 		this.length = weights.length;
-		this.score = 0;
+		this.numCorrect = 0;
+		this.numWrong = 0;
 
 		double p2weights[] = p2.getWeights();
 
@@ -65,7 +68,7 @@ public class GeneticEntity {
 		return this.weights;
 	}
 
-	private double scoreCandidateHelper(Candidate c) {
+	public double evaluateCandidate(Candidate c) {
 		double score = 0;
 		for (int i = 0; i < this.length; i++) {
 			score += c.getElement(i) * this.weights[i];
@@ -75,16 +78,16 @@ public class GeneticEntity {
 
 	public void scoreCandidate(Candidate candidate) {
 		
-		if (this.scoreCandidateHelper(candidate) > GeneticEntity.Threshold){
+		if (this.evaluateCandidate(candidate) > GeneticEntity.Threshold){
 			if(candidate.getTrue()){
-				this.score += 2;
+				this.numCorrect += 1;
 			} else {
-				score -= 1;
+				this.numWrong += 1;
 			}
 		}
 
 	}
-
+	
 	public String toString() {
 		String s = Double.toString(this.weights[0]);
 		for (int i = 1; i < this.length; i++) {
@@ -99,7 +102,24 @@ public class GeneticEntity {
 	}
 
 	public int getScore() {
-		return this.score;
+		//We want to bias for trying to make choices
+		if(this.numCorrect == 0 && this.numWrong == 0)
+			return Integer.MIN_VALUE;
+		return this.numCorrect - this.numWrong;
+	}
+
+	//the value 0 if this == rhs; a value less than 0 if this < rhs; and a value greater than 0 if this > rhs
+	public int compareTo(GeneticEntity rhs) {
+		int score1 = this.numCorrect - this.numWrong;
+		int score2 = rhs.numCorrect - rhs.numWrong;
+		
+		if(score1 == score2){
+			score1 = this.numCorrect;
+			score2 = this.numCorrect;
+			//I thought about adding another if statement here to use the numWrong value if numCorrect was the same but realized it would provide no useful information.
+		}
+		
+		return score1 - score2;
 	}
 
 }

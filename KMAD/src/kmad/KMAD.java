@@ -27,6 +27,7 @@ public class KMAD {
 		// File inFile = new File("TGMC training-sample.csv");
 //		Scanner in = null;
 		File inFile2 = new File("min-max_values.txt");
+		File evalFile = new File("tgmcevaluation.csv");
 		Scanner in2 = null;
 		ArrayList<Candidate> candidates = new ArrayList<Candidate>();
 		
@@ -64,7 +65,7 @@ public class KMAD {
 
 
 		double vals[] = new double[638];
-		double delta[] = new double[319];
+		double delta[] = new double[318];
 		int i = 0;
 		Scanner in3;
 		while (in2.hasNextLine()) {
@@ -79,18 +80,18 @@ public class KMAD {
 		}
 		in2.close();
 		
-		for (i = 0; i < 319; i++) {
+		for (i = 0; i < 318; i++) {
 			delta[i] = Math.abs((vals[i] - vals[i + 230]));
 			// System.out.println(delta[i]);
 		}
 
 		//Call the three approaches.
 		// TODO: Add calling method for ID3
-		Genetic genetic = new Genetic(candidates, delta, inFile);
-		genetic.run();
+		Genetic genetic = new Genetic(delta, inFile);
+		genetic.run(evalFile);
 			//For now, precision is passed in directly as 3 for J48.
-		J48 tree = new J48(inFile, 3, false, false);
-		J48.process();
+		//J48 tree = new J48(inFile, 3, false, false);
+		//J48.process();
 		
 
 		//If your approach directly returns the Cand ArrayList, assign it here.

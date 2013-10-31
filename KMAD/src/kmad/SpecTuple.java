@@ -9,11 +9,11 @@ package kmad;
  * @author amesen
  */
 public class SpecTuple {
-	int score;
+	double score;
 	int ID;
 	
 	//Constructor
-	public SpecTuple(int pScore, int pID){
+	public SpecTuple(double pScore, int pID){
 		score = pScore;
 		ID = pID;
 	}

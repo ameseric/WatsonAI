@@ -10,28 +10,70 @@ import java.util.Random;
 import java.util.Scanner;
 
 public class Genetic{
-	static final int PopulationSize = 100;
-	static final int NumberOfGenerations = 2000;
-    ArrayList<Candidate> candidates = new ArrayList<Candidate>();  
+	static final int PopulationSize = 20;
+	static final int NumberOfGenerations = 1000;
     ArrayList<GeneticEntity> population = new ArrayList<GeneticEntity>();
-    int cols = 319;
+    int cols = 318;
     int generation;
     double delta[];
     int max;
 	private ArrayList<Integer> scores;
 	private File inFile;
+	private GeneticEntity bestEntity;
+	private ArrayList<SpecTuple> evaluationScores;
 	
 	
     
-	public Genetic(ArrayList<Candidate> passedIn, double delta[], File inFile){
-		candidates = passedIn;
+	public Genetic(double delta[], File inFile){
 		generation = 0;
 		this.delta = delta;
 		this.inFile = inFile;
 		this.scores = new ArrayList<Integer>();
 	}
+	
+	public void run(File evalFile){
+		this.runTraining();
+		
+		int maxIndex = 0;
+		for(int i = 1; i < scores.size(); i++){
+			//System.out.println(scores[i]);
+			if(scores.get(i) > scores.get(maxIndex)){
+				maxIndex = i;
+			}
+		}
+		this.bestEntity = this.population.get(maxIndex);
+		this.population = null;
+		this.scores = null;
+		
+		System.out.println("Best candidate: " + this.bestEntity.toString());
+		this.scoreFile(evalFile);
+	}
+	
+	public void scoreFile(File evalFile){
+		Scanner in = null;
+		try {
+			in = new Scanner(evalFile);
+		} catch (FileNotFoundException e) {
+			System.out.println("Evaluation File not found");
+			System.exit(1); // can't do anything, exit.
+		}
+		Candidate candidate = null;
+		double candidateScore;
+		while(in.hasNextLine()){
+			candidate = new Candidate(in.nextLine(), false);
+			candidateScore = this.bestEntity.evaluateCandidate(candidate);
+			SpecTuple tuple = new SpecTuple(candidateScore, candidate.getID());
+			this.evaluationScores.add(tuple);
+			tuple = null;
+		}
+		in.close();
+		System.out.println("Genetic Results:");
+		for (SpecTuple tuple : this.evaluationScores) {
+			System.out.println(tuple.ID + ": " + tuple.score);
+		}
+	}
     
-    public void run(){
+    public void runTraining(){
 		//put main code here for thread implementation- need to mutate the passed-in arraylist
 		
     	//for now i'm just having it do setup, and then have it call another method that will be recursive
@@ -180,7 +222,7 @@ public class Genetic{
 		maxIndex = maxs.get(r.nextInt(maxs.size()));
 		
 //		System.out.println(maxIndex + " scored " + scores.get(maxIndex));
-		System.out.println("Max Score: " + scores.get(maxIndex));
+		System.out.println("Max Score: " + scores.get(maxIndex) + " (" + this.population.get(maxIndex).numCorrect + " - " + this.population.get(maxIndex).numWrong + ")");
 		System.out.println(this.population.get(maxIndex).toString());
 		minScore = Math.abs(scores.get(maxIndex));
 		scoreSum += minScore * scores.size();
@@ -198,7 +240,7 @@ public class Genetic{
 			int n = r.nextInt(Genetic.PopulationSize);
 			while(n==j)
 				n = r.nextInt(Genetic.PopulationSize);
-			pool[j] = (this.population.get(j).getScore() > this.population.get(n).getScore()) ? this.population.get(j) : this.population.get(n);
+			pool[j] = (this.population.get(j).compareTo(this.population.get(n)) > 0) ? this.population.get(j) : this.population.get(n);
 		}
 		
 	

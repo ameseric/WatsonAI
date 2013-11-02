@@ -15,6 +15,7 @@ public class GeneticEntity {
 	static double mutationChance = 0.2;
 	int numCorrect = 0;
 	int numWrong = 0;
+	private static final int correctWeight = 10;
 
 	public GeneticEntity() {
 
@@ -101,19 +102,22 @@ public class GeneticEntity {
 		return new GeneticEntity(weights, length);
 	}
 
-	public int getScore() {
+	public int getScore(boolean half) {
 		//We want to bias for trying to make choices
-		if(this.numCorrect == 0 && this.numWrong == 0)
+		if(this.numCorrect == 0)
 			return Integer.MIN_VALUE;
-		return this.numCorrect - this.numWrong;
+		if(half){
+			return this.numCorrect;
+		}
+		return (this.numCorrect*GeneticEntity.correctWeight ) - this.numWrong;
 	}
 
 	//the value 0 if this == rhs; a value less than 0 if this < rhs; and a value greater than 0 if this > rhs
-	public int compareTo(GeneticEntity rhs) {
-		int score1 = this.numCorrect - this.numWrong;
-		int score2 = rhs.numCorrect - rhs.numWrong;
+	public int compareTo(GeneticEntity rhs, boolean half) {
+		int score1 = (this.numCorrect*GeneticEntity.correctWeight) - this.numWrong;
+		int score2 = (rhs.numCorrect*GeneticEntity.correctWeight) - rhs.numWrong;
 		
-		if(score1 == score2){
+		if(half || score1 == score2){
 			score1 = this.numCorrect;
 			score2 = this.numCorrect;
 			//I thought about adding another if statement here to use the numWrong value if numCorrect was the same but realized it would provide no useful information.

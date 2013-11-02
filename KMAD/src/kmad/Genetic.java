@@ -21,6 +21,7 @@ public class Genetic{
 	private File inFile;
 	private GeneticEntity bestEntity;
 	private ArrayList<SpecTuple> evaluationScores;
+	private boolean half;
 	
 	
     
@@ -130,12 +131,14 @@ public class Genetic{
     
     public void geneticAct(double[] columns, double[] delta){
     	System.out.println("Creating generation 0");
+    	this.half = true;
     	this.createInitialPopulation(columns);
 //    	System.out.println("Evaluating...");
     	this.evaluatePopulation();
     	
-    	for(int i = 1; i < Genetic.NumberOfGenerations; i++){
-    		System.out.println("Creating generation " + i);
+    	for(this.generation = 1; this.generation < Genetic.NumberOfGenerations; this.generation++){
+    		System.out.println("Creating generation " + this.generation);
+    		this.half = this.generation<(Genetic.NumberOfGenerations / 100);
     		this.createNextGeneration();
     		//System.out.println("Evaluating...");
     		this.evaluatePopulation();
@@ -181,8 +184,8 @@ public class Genetic{
 		in.close();
 		float aveScore = 0;
 		for (GeneticEntity entity : this.population) {
-			this.scores.add(entity.getScore());
-			aveScore += entity.getScore()/Genetic.PopulationSize;
+			this.scores.add(entity.getScore(half));
+			aveScore += entity.getScore(half)/Genetic.PopulationSize;
 		}
 		System.out.println(this.scores);
 		System.out.println("Average Score: " + aveScore);
@@ -240,7 +243,7 @@ public class Genetic{
 			int n = r.nextInt(Genetic.PopulationSize);
 			while(n==j)
 				n = r.nextInt(Genetic.PopulationSize);
-			pool[j] = (this.population.get(j).compareTo(this.population.get(n)) > 0) ? this.population.get(j) : this.population.get(n);
+			pool[j] = (this.population.get(j).compareTo(this.population.get(n), this.half) > 0) ? this.population.get(j) : this.population.get(n);
 		}
 		
 	

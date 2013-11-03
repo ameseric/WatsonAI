@@ -55,5 +55,17 @@ public class Candidate {
 		return this.candidateID;
 	}
 	
+	public ArrayList<Float> getElements(){
+		return scores;
+	}
+	
+	public void setElements(ArrayList<Float> vals){
+		this.scores = vals;
+	}
+	
+	public int length(){
+		return this.scores.size();
+	}
+	
 
 }

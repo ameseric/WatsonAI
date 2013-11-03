@@ -87,8 +87,11 @@ public class KMAD {
 
 		//Call the three approaches.
 		// TODO: Add calling method for ID3
-		Genetic genetic = new Genetic(delta, inFile);
-		genetic.run(evalFile);
+		//Genetic genetic = new Genetic(delta, inFile);
+		//genetic.run(evalFile);
+		
+		Regression reg = new Regression(delta, inFile);
+		reg.activate(0);
 			//For now, precision is passed in directly as 3 for J48.
 		//J48 tree = new J48(inFile, 3, false, false);
 		//J48.process();

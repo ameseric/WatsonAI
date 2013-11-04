@@ -30,7 +30,7 @@ public class J48DecisionTree {
 	public J48DecisionTree(ArrayList<ArrayList<Double>> passedIn, int precision){
 		initialSet = passedIn;
 		this.precision = precision;
-		cuts = new double[passedIn.size()][precision];
+		cuts = new double[passedIn.size()-1][precision];
 		
 		//PrecisionMeasure and PrecisionCut below are both a part of the preprocessor for the training dataset.
 		//Take the given T and pick the cutoff value based on the precision value.
@@ -38,12 +38,12 @@ public class J48DecisionTree {
 		
 		//Divide up the sets according to the afore-chosen cuts
 		precisionCut();
-		System.out.println(root.T.get(root.T.size()-1));
-		
+				
 		//Use the now-divided sets to build the decision tree
 		buildTree(root);
-		System.out.println("Hi!");
+		System.out.println("Finished tree process!");
 		
+		//printTree(root);
 		//Done! Ready for candidates.
 		
 	}
@@ -79,13 +79,13 @@ public class J48DecisionTree {
 	
 	//Takes the calculated cut points and classifies all values falling within the proper range
 	private void precisionCut(){
-		int size = initialSet.get(0).size()-1;
+		int size = initialSet.get(0).size();
 		
-		for(int i=0; i<initialSet.size(); i++){
+		for(int i=0; i<initialSet.size()-1; i++){
 			root.T.add(new ArrayList<Integer>());
 			for(int k=0; k<size; k++){
 				
-				for(int l=0; l<precision; l++){
+				for(int l=0; l<precision+1; l++){
 					//if we're below the cutoff, transform to l
 					if(initialSet.get(i).get(k) < cuts[i][l]){
 						root.T.get(i).add(l);
@@ -99,6 +99,8 @@ public class J48DecisionTree {
 				
 			}
 		}
+		int sum = 0;
+		//Initialize T/F column
 		root.T.add(new ArrayList());
 		for(int p=0; p<initialSet.get(0).size(); p++){
 			if(initialSet.get(initialSet.size()-1).get(p) == 1){
@@ -113,12 +115,51 @@ public class J48DecisionTree {
 		
 	}
 	
-	//I probably won't fill this in until after first milestone- for now, examining the tree built by the
-	//dataset is all we need to evaluate the efficiency (Since the training set is small).
-	public SpecTuple analyze( ArrayList<Candidate> question ){
-		//TODO: AM, Fill in analyze function
+	//Takes in a single question, runs it through the decision tree, and determines true or false
+	public boolean analyze( ArrayList<Double> question ){
+		ArrayList<Integer> newQ = cutQuestion(question);
+		question = null;
 		
-		return new SpecTuple(1,2);
+		boolean notLeaf = true;
+		Node currentNode = root;
+		int currentValue;
+		
+		
+		while(!currentNode.leaf){
+			
+			//Grab splitting value
+			currentValue = newQ.get(currentNode.sIndex);
+			//remove that value to keep following indicies accurate
+			newQ.remove(currentNode.sIndex);
+			
+			currentNode = currentNode.child[currentValue];
+			if(currentNode == null){
+				return false;
+			}if(newQ.isEmpty()){
+				System.out.println("Ran out?...");
+				return currentNode.type;
+			}
+		
+		}
+		return currentNode.type;
+	}
+	
+	private ArrayList<Integer> cutQuestion( ArrayList<Double> question){
+		ArrayList<Integer> newQ = new ArrayList<>();
+		
+		for(int i=0; i<cuts.length; i++){
+			for(int k=0; k<precision; k++){
+				if(question.get(i) < cuts[i][k]){
+					newQ.add(k);
+					break;
+				}else if(question.get(i) >= cuts[i][precision-1]){
+					newQ.add(precision);
+					break;
+				}
+			}
+		}
+		
+		return newQ;
 	}
 	
 	//Used by the constructor to build a decision tree using the preprocessed training dataset. RECURSIVE.
@@ -128,26 +169,35 @@ public class J48DecisionTree {
 	 * 4) 
 	 */
 	private void buildTree(Node N){
+		if(N == null || N.leaf){
+			return;
+		}
+		
 		int classCheck = sameClass(N);
 		
 		//Base case 1: are all classes the same?
 		if(classCheck == 1){
-			System.out.println("Hit base true case!");
 			N.type = true;
+			N.leaf = true;
 			return;
 		}else if(classCheck == 0){
-			System.out.println("Hit base false case!");
 			N.type = false;
+			N.leaf = true;
 			return;
 		}
 		
 		//Base case 2: More than 1 class, so pick the best attribute to split along
-		N.S = pickAttributeSplit(N.T, precision);
+		N.sIndex = pickAttributeSplit(N.T, precision);
+		try{N.S = N.T.get(N.sIndex);}
+		catch(ArrayIndexOutOfBoundsException e){
+			System.out.println("Bugger.");
+			System.exit(1);}
 		
 		//Remove redundant sample set from N.T
 		N.T.remove(N.S);
 		
 		//Initialize the children for N, and copy over their T sets of sample sets.
+		//TODO: Change for dynamic
 		setChildren(N, precision+1);
 		
 		//Now that each child has their revised copy of the attribute columns,
@@ -171,6 +221,10 @@ public class J48DecisionTree {
 		for(int j=0; j<number; j++){
 			N.child[j] = new Node(N);
 			currentChild = N.child[j];
+			//initialize each array in T for child
+			for(int p=0; p<N.T.size(); p++){
+				currentChild.T.add(new ArrayList<Integer>());
+			}
 			
 			//Loop for each element in S
 			for(int i=0; i<N.S.size(); i++){
@@ -181,6 +235,12 @@ public class J48DecisionTree {
 						currentChild.T.get(k).add(N.T.get(k).get(i));
 					}
 				}
+			}
+		}
+		//If child is empty, prune it by setting to null
+		for(int i=0; i<N.child.length; i++){
+			if(N.child[i].T.isEmpty() || N.child[i].T.get(0).isEmpty()){
+				N.child[i] = null;
 			}
 		}
 		
@@ -194,7 +254,6 @@ public class J48DecisionTree {
 		
 		for(int k=0; k<N.T.get(index-1).size()-1; k++){
 			if(N.T.get(index-1).get(k) != N.T.get(index-1).get(k+1)){
-				System.out.println("Rejected!");
 				return type;
 			}
 		}
@@ -204,22 +263,26 @@ public class J48DecisionTree {
 	
 	//Takes in the attribute columns, and finds which has the highest gain.
 	//Returns the index of the column with highest entropy gain.
-	private ArrayList<Integer> pickAttributeSplit(ArrayList<ArrayList<Integer>> T, int precision){
+	private int pickAttributeSplit(ArrayList<ArrayList<Integer>> T, int precision){
 
 		double baseClassEntropy = calcClassEntropy(T.get(T.size()-1));
-		double attrEntropy;
-		double gain = 0;
+		double attrEntropy = 0.0;
+		double gain = -1;
 		int index = -1;
+		double entropy = 0.0;
 		
-		for(int j=0; j<T.size(); j++){
+		for(int j=0; j<T.size()-1; j++){
 			attrEntropy = calcAttrEntropy(T.get(j), T.get(T.size()-1), precision);
-			if((baseClassEntropy - attrEntropy) > gain){
-				gain = baseClassEntropy - attrEntropy;
-				System.out.println(gain);
+			if(( baseClassEntropy - attrEntropy) > gain){
+				gain = (double) baseClassEntropy - attrEntropy;
 				index = j;
 			}
-		}		
-		return T.get(index);
+		}
+		if(index == -1){
+			System.out.println("Had an odd gain again...");
+			return 0;
+		}
+		return index;
 	}
 	
 	//Calculate the Entropy of the node due to the class division.
@@ -239,8 +302,8 @@ public class J48DecisionTree {
 	}
 	
 	//Calculate the Entropy of the node due to attribute division.
-	private int calcAttrEntropy(ArrayList<Integer> S, ArrayList<Integer> classTypes, int precision){
-		int sum = 0;
+	private double calcAttrEntropy(ArrayList<Integer> S, ArrayList<Integer> classTypes, int precision){
+		double sum = 0;
 		ArrayList<ArrayList<Integer>> tf = new ArrayList<>();
 		
 		//Build tf array for each attribute grouping
@@ -254,12 +317,13 @@ public class J48DecisionTree {
 		}
 		
 		for(int i=0; i<=precision; i++){
-			sum += (frequency(S, i) / S.size()) * calcClassEntropy(tf.get(i));
+			sum += ((double)frequency(S, i) / S.size()) * calcClassEntropy(tf.get(i));
 		}
-		System.out.println(sum);
+		
 		return sum;
 	}
 	
+	//Returns the number of times object appears in the given arraylist
 	private int frequency(ArrayList<Integer> d, int classType){
 		int sum=0;
 		
@@ -272,15 +336,39 @@ public class J48DecisionTree {
 		return sum;
 	}
 	
+	private void printTree(Node currentNode){
+		System.out.println();
+		if(currentNode.parent != null){
+			System.out.println("Has a parent, " + currentNode.parent.S);
+		}
+		if(currentNode.leaf){
+			System.out.println(currentNode.type);
+			return;
+		}
+		
+		
+		System.out.println("Node's set: " + currentNode.S);
+		System.out.println("Node's split index: " + currentNode.sIndex);
+		
+		for(int i=0; i<currentNode.child.length; i++){
+			if(currentNode.child[i] != null){
+				printTree(currentNode.child[i]);
+			}
+		}
+		return;
+	}
+	
 	
 }
 
 class Node {
-	Node child[];
+	Node child[] = null;
 	Node parent;
+	int sIndex;
 	ArrayList<Integer> S = new ArrayList();
 	ArrayList<ArrayList<Integer>> T = new ArrayList<>();
 	boolean type;
+	boolean leaf = false;
 	
 	//Constructor. If the node is to be the root, pass in null as the parent type
 	public Node(Node parent){

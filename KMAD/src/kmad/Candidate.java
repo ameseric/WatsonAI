@@ -4,14 +4,14 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Candidate {
-	private ArrayList<Float> scores;
+	ArrayList<Double> scores;
 	private boolean training;
 	private boolean true_cand = false;
 	private int candidateID;
 	private float questionID;
 	
 	public Candidate(String scoreString, Boolean training){
-		scores = new ArrayList<Float>();
+		scores = new ArrayList<>();
 		String temp;
 		Scanner scoreScanner = new Scanner(scoreString);
 		scoreScanner.useDelimiter(",");
@@ -29,7 +29,7 @@ public class Candidate {
 				} 
 			}
 			else{				
-				scores.add(Float.parseFloat(temp));
+				scores.add(Double.parseDouble(temp));
 			}
 		}
 		scoreScanner.close();
@@ -55,11 +55,11 @@ public class Candidate {
 		return this.candidateID;
 	}
 	
-	public ArrayList<Float> getElements(){
+	public ArrayList<Double> getElements(){
 		return scores;
 	}
 	
-	public void setElements(ArrayList<Float> vals){
+	public void setElements(ArrayList<Double> vals){
 		this.scores = vals;
 	}
 	

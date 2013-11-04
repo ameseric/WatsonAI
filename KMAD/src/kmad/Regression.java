@@ -140,11 +140,11 @@ public class Regression {
 	}
 	
 	Candidate paring(Candidate cand){
-		ArrayList<Float> temp;
+		ArrayList<Double> temp;
 		temp = cand.getElements();
 		for (int i = 0; i < removalStruct.size(); i++){
 			//temp.remove(temp.get(removalStruct.get(i)));
-			temp.set(removalStruct.get(i), Float.NEGATIVE_INFINITY);
+			temp.set(removalStruct.get(i), Double.NEGATIVE_INFINITY);
 			temp.remove(Float.NEGATIVE_INFINITY);
 		}
 		cand.setElements(temp);

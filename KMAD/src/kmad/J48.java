@@ -11,8 +11,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Random;
 import java.util.Scanner;
+import java.util.List;
 
 /**320 columns
  *
@@ -26,8 +28,12 @@ public class J48 {
 	static boolean postpruning;
 	static File inFile;
 	static int precision;
-	final static File training = new File("TGMC training-sample.csv");
+	final static File training = new File("tgmctrain.csv");
+	//final static File training = new File("TGMC training-sample.csv");
+	//final static File training = new File("treeTest.csv");
 	static J48DecisionTree tree;
+	static int truthSum = 0;
+	static ArrayList<Integer> candIDs = new ArrayList<>();
 	
 	//Base constructer, takes a data file location, numeric precision factor, and pre/post pruning options
 	public J48(File data, int precision, boolean pre, boolean post){
@@ -42,27 +48,32 @@ public class J48 {
 		//read in training data
 		readIn(true);
 		
-		//System.out.println("Hi!" + candidates.get(1).getElement(15) );
-		
 		//Preprocess the training data so that the tree can be built
 		preProcess();
+		candidates = null;
+		
+		//remove the first two attribute sets, which are candidate and question IDs
 		attributes.remove(0);
 		attributes.remove(0);
 		
 		//Build a decision tree based on the given training data
 		buildDecisionTree();
 		
-		//Loop for each question, reading in only the candidates for the
-		//current question.
-		/*for(int i=0; i<8; i++){
-			readIn(false);
-			processSingleQuestion();
-		}*/
+		//Loop through candidates, checking if true or false
+		readIn(false);
+		
+		//Print out IDs of all truths
+		for(int i=0; i<candIDs.size(); i++){
+			System.out.println(candIDs.get(i));
+		}
 	}
 	
-	//Reads candidates for 1 question
+	//Reads candidates for 1 question, or alternatively the entire training set for tree construction
 	public static void readIn(boolean isTraining){
 		File currentFile;
+		Candidate middleman;
+		boolean answer = false;
+		int falseCount = 0;
 	
 		if(isTraining){
 			currentFile = training;
@@ -78,9 +89,25 @@ public class J48 {
 			System.exit(1);
 		}
 		while(in.hasNextLine()){
-			candidates.add(new Candidate(in.nextLine(), true));
+			if(isTraining){
+				middleman = new Candidate(in.nextLine(), true);
+				if(middleman.getTrue()){
+					candidates.add(middleman);
+				}else if(falseCount%2 == 0){
+					candidates.add(middleman);
+				}falseCount++;
+				
+			}else{
+				middleman = new Candidate(in.nextLine(), isTraining);
+				candIDs.add( middleman.scores.remove(0).intValue());
+				middleman.scores.remove(0);
+				answer = processSingleQuestion(middleman.scores);
+				if(!answer){
+					candIDs.remove(candIDs.size()-1);
+				}
+			}
 		}
-		System.out.println(candidates.toString());
+		System.out.println("Finished read in!");
 		in.close();
 		
 	}
@@ -96,13 +123,18 @@ public class J48 {
 	public static void preProcess(){
 		ArrayList<Double> middleMan = new ArrayList<>();
 		Double classType;
+		int size = candidates.get(0).getSize();
 		
-		for(int i=0; i<candidates.get(0).getSize(); i++){
-			for(int j=0; j<candidates.size(); j++){
-				middleMan.add(candidates.get(j).getElement(i));
+		for(int h=0; h<candidates.get(0).getSize(); h++){
+			attributes.add(new ArrayList<Double>());
+		}
+		System.out.println("Built attributes!");
+		
+		for(int i=0; i<candidates.size(); i++){
+			for(int j=0; j<size; j++){
+				attributes.get(j).add(candidates.get(i).getElement(j));
 			}
-			attributes.add(middleMan);
-			middleMan = new ArrayList<>();			
+			candidates.get(i).scores = null;
 		}
 		
 		for(int k=0; k<candidates.size(); k++){
@@ -117,8 +149,8 @@ public class J48 {
 	}
 	
 	//Runs a single question through the tree, using actual data (not training)
-	public static void processSingleQuestion(){
-		tree.analyze(candidates);
+	public static boolean processSingleQuestion(ArrayList<Double> question){
+		return tree.analyze(question);
 	}
 	
 }

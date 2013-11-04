@@ -55,7 +55,7 @@ public class Regression {
 		} //initialize to zero
 		
 		if (mode == 0){ //set up the basic linear model, increment mode
-			linear();
+		//	linear();
 		}
 		
 		if (mode == 0){ //run ligistic using the gathered data
@@ -63,6 +63,7 @@ public class Regression {
 		}
 		
 		if (mode == 0){
+			
 			return evaluation();
 		}
 		return null;
@@ -195,13 +196,16 @@ public class Regression {
 				odds = odds + 1.0/(1.0+Math.pow(Math.E, -(regress0[i] + regress[i]*candidate.getElement(i))));
 			}
 			odds = odds/(318-removalStruct.size());
-			System.out.println(odds);
+			//System.out.println(odds);
 			if (odds > 0.503){
 				determined.add(candidate.getID());
 			}
 		}
 		
-		System.out.println(determined);
+		for (int i = 0; i < determined.size(); i++){
+			System.out.println(determined.get(i));
+		}
+		//System.out.println(determined);
 		return determined;
 	}
 	

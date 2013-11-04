@@ -25,6 +25,7 @@ public class Regression {
 	double[] xy, x, x2; 
 	int n, y;
 	ArrayList<Integer> determined = new ArrayList<Integer>();
+	ArrayList<Candidate> d2 = new ArrayList<Candidate>();
 
 	
 	public Regression(double delta[], File inFile){
@@ -34,7 +35,7 @@ public class Regression {
 	}
 	
 	//performs setup, runs according to mode. 
-	public ArrayList<Integer> activate(int mode){
+	public ArrayList<Candidate> activate(int mode){
 		for (int i = 0; i < deltas.length; i++){
 			if (deltas[i] == 0){
 				removalStruct.add(0, i); //allow for removing dead columns
@@ -44,15 +45,15 @@ public class Regression {
 		System.out.println("dead columns are: " + removalStruct);
 		System.out.println("number of dead columns: " + removalStruct.size());
 		
-		regress = new double[318-removalStruct.size()];
-		regress0 = new double[318-removalStruct.size()];
-		xy =  new double[318-removalStruct.size()];
-		x2 = new double[318-removalStruct.size()]; 
-		x = new double[318-removalStruct.size()];
+		//regress = new double[318-removalStruct.size()];
+		//regress0 = new double[318-removalStruct.size()];
+		//xy =  new double[318-removalStruct.size()];
+		//x2 = new double[318-removalStruct.size()]; 
+		//x = new double[318-removalStruct.size()];
 		
-		for (int i = 0; i < xy.length; i++){
-			xy[i] = x2[i] = x[i] = 0;
-		} //initialize to zero
+		//for (int i = 0; i < xy.length; i++){
+		//	xy[i] = x2[i] = x[i] = 0;
+		//} //initialize to zero
 		
 		if (mode == 0){ //set up the basic linear model, increment mode
 		//	linear();
@@ -83,6 +84,7 @@ public class Regression {
 			System.out.println("Evaluation File not found");
 			System.exit(1); // can't do anything, exit.
 		}
+		
 		int j = 0, n = 0;
 		double v = 0;
 		Candidate candidate = null;
@@ -182,7 +184,7 @@ public class Regression {
 		
 	}
 	
-	public ArrayList<Integer> evaluation(){
+	public ArrayList<Candidate> evaluation(){
 		File evalFile = new File("tgmcevaluation.csv");
 		Scanner in = null;
 		
@@ -203,16 +205,17 @@ public class Regression {
 			}
 			odds = odds/(318-removalStruct.size());
 			//System.out.println(odds);
-			if (odds > 0.503){
+			if (odds > 0.5025){
+				//d2.add(candidate);
 				determined.add(candidate.getID());
 			}
 		}
-		
+		System.out.println("the following items were found:\n");
 		for (int i = 0; i < determined.size(); i++){
 			System.out.println(determined.get(i));
 		}
 		//System.out.println(determined);
-		return determined;
+		return d2;
 	}
 	
 	public ArrayList<Integer> evaluation(ArrayList<Candidate> use){
@@ -238,12 +241,12 @@ public class Regression {
 	
 	public void setRemovalStruct(int[] rem){
 		for (int i = 0; i < rem.length; i++){
-			removalStruct.add(rem[i]);
+			removalStruct.set(i, rem[i]);
 		}
 	}
 	
 	public void setW0(double[] vals){
-		regress0 = new double[318-removalStruct.size()];
+		regress0 = new double[319-removalStruct.size()];
 		for (int i = 0; i < vals.length; i++){
 			regress0[i] = vals[i];
 		}

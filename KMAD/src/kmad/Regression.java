@@ -25,6 +25,7 @@ public class Regression {
 	double[] xy, x, x2; 
 	int n, y;
 	ArrayList<Integer> determined = new ArrayList<Integer>();
+
 	
 	public Regression(double delta[], File inFile){
 		this.deltas = delta;
@@ -58,11 +59,11 @@ public class Regression {
 		}
 		
 		if (mode == 0){ //run ligistic using the gathered data
-			logistic(); //activate later 
+			//logistic(); //activate later 
 		}
 		
 		if (mode == 0){
-			//return evaluation();
+			return evaluation();
 		}
 		return null;
 	}
@@ -84,9 +85,9 @@ public class Regression {
 			candidate = paring(candidate); //remove dead lines 
 			
 			if (candidate.getTrue()){ //determine if true for training purposes
-				v = 0.9;
+				v = 1.0;
 			} else {
-				v = -0.9;
+				v = 0.0;
 			}
 			
 			for (int i = 0; i < candidate.length(); i++){ //create data 
@@ -94,8 +95,9 @@ public class Regression {
 				xy[i] += v * v0;
 				x[i] += v0;
 				x2[i] += Math.pow(v0, 2);
-				y += v; //number of true candidates
+				//y += v; //number of true candidates
 			}
+			y += v;
 		}
 		in.close();
 		
@@ -117,12 +119,12 @@ public class Regression {
 //		System.out.println(n);
 		System.out.printf("result of linear w0 is: ");
 		for (int i = 0; i < regress.length; i++){
-			System.out.printf("%f + ", regress0[i]);
+			System.out.printf("%f, ", regress0[i]);
 		
 		}
-		System.out.printf("result of linear w1 is: ");
+		System.out.printf("\nresult of linear w1 is: ");
 		for (int i = 0; i < regress.length; i++){
-			System.out.printf("%f + ", regress0[i]);
+			System.out.printf("%f, ", regress[i]);
 		
 		}
 		System.out.println("\nEnd Linear");
@@ -156,17 +158,17 @@ public class Regression {
 			candidate = paring(candidate); //remove dead lines 
 			double odds = 0;
 			for (int i = 0; i < candidate.length(); i++){
-				odds = odds + 1/(1+Math.pow(Math.E, -(regress0[i] + regress[i]*candidate.getElement(i))));
+				odds = odds + 1.0/(1.0+Math.pow(Math.E, -(regress0[i] + regress[i]*candidate.getElement(i))));
 			}
 			odds = odds/(318-removalStruct.size());
 			if (candidate.getTrue()){ //print out odds for true candidates only. 
 				//System.out.println(odds);
 			}
-			if (odds > 0.51){ //use odds as a cutoff 
+			if (odds > 0.50585){ //use odds as a cutoff 
 				//determined.add(candidate);
 				if (candidate.getTrue()){
 					right++;
-				} else wrong++; //only ocunt the ones hit for now. 
+				} else wrong++; //only count the ones hit for now. 
 			}
 		}
 		System.out.println("right: " + right + " wrong: "+ wrong);
@@ -190,11 +192,11 @@ public class Regression {
 			candidate = paring(candidate); //remove dead lines 
 			double odds = 0;
 			for (int i = 0; i < candidate.length(); i++){
-				odds = odds + 1/(1+Math.pow(Math.E, -(regress0[i] + regress[i]*candidate.getElement(i))));
+				odds = odds + 1.0/(1.0+Math.pow(Math.E, -(regress0[i] + regress[i]*candidate.getElement(i))));
 			}
 			odds = odds/(318-removalStruct.size());
-			//System.out.println(odds);
-			if (odds > 0.9){
+			System.out.println(odds);
+			if (odds > 0.503){
 				determined.add(candidate.getID());
 			}
 		}
@@ -211,11 +213,11 @@ public class Regression {
 			candidate = paring(candidate); //remove dead lines 
 			double odds = 0;
 			for (int i = 0; i < candidate.length(); i++){
-				odds = odds + 1/(1+Math.pow(Math.E, -(regress0[i] + regress[i]*candidate.getElement(i))));
+				odds = odds + 1.0/(1.0+Math.pow(Math.E, -(regress0[i] + regress[i]*candidate.getElement(i))));
 			}
 			odds = odds/(318-removalStruct.size());
 			//System.out.println(odds);
-			if (odds > 0.9){
+			if (odds > 0.50585){
 				determined.add(candidate.getID());
 			}
 		}
@@ -224,7 +226,7 @@ public class Regression {
 		return determined;
 	}
 	
-	public void setRemoval(int[] rem){
+	public void setRemovalStruct(int[] rem){
 		for (int i = 0; i < rem.length; i++){
 			removalStruct.add(rem[i]);
 		}

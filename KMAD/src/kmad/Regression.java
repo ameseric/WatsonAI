@@ -15,15 +15,16 @@ public class Regression {
 	private File inFile;
 	ArrayList<Integer> removalStruct = new ArrayList<Integer>();
 	double regress[];
+	double regress0[];
 	double positive[]; //store average for trues. 
 	double negative[]; //store average value for false. 
 	double threshold = 0.75;
 	double f = 0.1;
 	double t = 0.9;
-	double e = 2.718281; //approximation
 	double tp, tn, fp, fn = 0;
 	double[] xy, x, x2; 
 	int n, y;
+	ArrayList<Integer> determined = new ArrayList<Integer>();
 	
 	public Regression(double delta[], File inFile){
 		this.deltas = delta;
@@ -32,7 +33,7 @@ public class Regression {
 	}
 	
 	//performs setup, runs according to mode. 
-	public void activate(int mode){
+	public ArrayList<Integer> activate(int mode){
 		for (int i = 0; i < deltas.length; i++){
 			if (deltas[i] == 0){
 				removalStruct.add(0, i); //allow for removing dead columns
@@ -41,22 +42,32 @@ public class Regression {
 		
 		System.out.println("dead columns are: " + removalStruct);
 		System.out.println("number of dead columns: " + removalStruct.size());
-		regress = new double[318-removalStruct.size()-2];
-		xy =  new double[318-removalStruct.size()-2];
-		x2 = new double[318-removalStruct.size()-2]; 
-		x = new double[318-removalStruct.size()-2];
+		
+		regress = new double[318-removalStruct.size()];
+		regress0 = new double[318-removalStruct.size()];
+		xy =  new double[318-removalStruct.size()];
+		x2 = new double[318-removalStruct.size()]; 
+		x = new double[318-removalStruct.size()];
 		
 		for (int i = 0; i < xy.length; i++){
 			xy[i] = x2[i] = x[i] = 0;
 		} //initialize to zero
 		
 		if (mode == 0){ //set up the basic linear model, increment mode
-			regress = linear();
-			mode = 1; //test logistic next. 
+			linear();
 		}
+		
+		if (mode == 0){ //run ligistic using the gathered data
+			logistic(); //activate later 
+		}
+		
+		if (mode == 0){
+			//return evaluation();
+		}
+		return null;
 	}
 	
-	double[] linear(){
+	public void linear(){
 		Scanner in = null;
 		try {
 			in = new Scanner(inFile);
@@ -64,55 +75,172 @@ public class Regression {
 			System.out.println("Evaluation File not found");
 			System.exit(1); // can't do anything, exit.
 		}
-		int j = 0, t = 0;
+		int j = 0, n = 0;
+		double v = 0;
 		Candidate candidate = null;
 		while(in.hasNextLine()){
 			j++;
 			candidate = new Candidate(in.nextLine(), true);
-			candidate = paring(candidate);
-			if (candidate.getTrue()){
-				t = 1;
+			candidate = paring(candidate); //remove dead lines 
+			
+			if (candidate.getTrue()){ //determine if true for training purposes
+				v = 0.9;
 			} else {
-				t = 0;
+				v = -0.9;
 			}
-			for (int i = 0; i < candidate.length() - 2; i++){
-				double v0 = candidate.getElement(i+2);
-				//System.out.println("count: "+ i + " value: " + v0);
-				xy[i] += t * v0;
+			
+			for (int i = 0; i < candidate.length(); i++){ //create data 
+				double v0 = candidate.getElement(i);
+				xy[i] += v * v0;
 				x[i] += v0;
 				x2[i] += Math.pow(v0, 2);
-				y += t; //number of true candidates
+				y += v; //number of true candidates
 			}
 		}
 		in.close();
-		System.out.println(j);
+		
 		for (int i = 0; i < xy.length; i++){
 			regress[i] = (j*xy[i] - x[i]*y)/(j*x2[i] - Math.pow(x[i], 2));
-		}
-		System.out.printf("result of linear is: ");
-		for (int i = 0; i < regress.length; i++){
+			regress0[i] = (y-regress[i]*x[i])/j;
 			
-			System.out.printf("%f, ", regress[i]);
+//			if (regress[i] == Double.NEGATIVE_INFINITY || regress[i] == Double.POSITIVE_INFINITY) {
+//				regress[i] = 0;
+//				regress0[i] = 0;
+//				n++;
+//			}
+//			else if (regress[i] != regress[i]){
+//				regress[i] = 0;
+//				regress0[i] = 0;
+//				n++;
+//			}
+		}
+//		System.out.println(n);
+		System.out.printf("result of linear w0 is: ");
+		for (int i = 0; i < regress.length; i++){
+			System.out.printf("%f + ", regress0[i]);
 		
 		}
-		System.out.println("\n End");
-		return null;
+		System.out.printf("result of linear w1 is: ");
+		for (int i = 0; i < regress.length; i++){
+			System.out.printf("%f + ", regress0[i]);
+		
+		}
+		System.out.println("\nEnd Linear");
 	}
 	
 	Candidate paring(Candidate cand){
 		ArrayList<Float> temp;
 		temp = cand.getElements();
 		for (int i = 0; i < removalStruct.size(); i++){
-			temp.remove(temp.get(removalStruct.get(i)));
+			//temp.remove(temp.get(removalStruct.get(i)));
+			temp.set(removalStruct.get(i), Float.NEGATIVE_INFINITY);
+			temp.remove(Float.NEGATIVE_INFINITY);
 		}
 		cand.setElements(temp);
 		return cand;
 		
 	}
 	
-	//may normalize the data
-	double[] normalize(double column[]){		
+	public void logistic(){
+		int right = 0, wrong = 0;
+		Scanner in = null;
+		try {
+			in = new Scanner(inFile);
+		} catch (FileNotFoundException e) {
+			System.out.println("Evaluation File not found");
+			System.exit(1); // can't do anything, exit.
+		}
+		Candidate candidate = null;
+		while(in.hasNextLine()){
+			candidate = new Candidate(in.nextLine(), true);
+			candidate = paring(candidate); //remove dead lines 
+			double odds = 0;
+			for (int i = 0; i < candidate.length(); i++){
+				odds = odds + 1/(1+Math.pow(Math.E, -(regress0[i] + regress[i]*candidate.getElement(i))));
+			}
+			odds = odds/(318-removalStruct.size());
+			if (candidate.getTrue()){ //print out odds for true candidates only. 
+				//System.out.println(odds);
+			}
+			if (odds > 0.51){ //use odds as a cutoff 
+				//determined.add(candidate);
+				if (candidate.getTrue()){
+					right++;
+				} else wrong++; //only ocunt the ones hit for now. 
+			}
+		}
+		System.out.println("right: " + right + " wrong: "+ wrong);
 		
-		return null;
+	}
+	
+	public ArrayList<Integer> evaluation(){
+		File evalFile = new File("tgmcevaluation.csv");
+		Scanner in = null;
+		
+		try {
+			in = new Scanner(evalFile);
+		} catch (FileNotFoundException e) {
+			System.out.println("Evaluation File not found");
+			System.exit(1); // can't do anything, exit.
+		}
+		
+		Candidate candidate = null;
+		while(in.hasNextLine()){
+			candidate = new Candidate(in.nextLine(), true);
+			candidate = paring(candidate); //remove dead lines 
+			double odds = 0;
+			for (int i = 0; i < candidate.length(); i++){
+				odds = odds + 1/(1+Math.pow(Math.E, -(regress0[i] + regress[i]*candidate.getElement(i))));
+			}
+			odds = odds/(318-removalStruct.size());
+			//System.out.println(odds);
+			if (odds > 0.9){
+				determined.add(candidate.getID());
+			}
+		}
+		
+		System.out.println(determined);
+		return determined;
+	}
+	
+	public ArrayList<Integer> evaluation(ArrayList<Candidate> use){
+
+		Candidate candidate = null;
+		for(int j = 0; j < use.size(); j++){
+			candidate = use.get(j);
+			candidate = paring(candidate); //remove dead lines 
+			double odds = 0;
+			for (int i = 0; i < candidate.length(); i++){
+				odds = odds + 1/(1+Math.pow(Math.E, -(regress0[i] + regress[i]*candidate.getElement(i))));
+			}
+			odds = odds/(318-removalStruct.size());
+			//System.out.println(odds);
+			if (odds > 0.9){
+				determined.add(candidate.getID());
+			}
+		}
+		
+		System.out.println(determined);
+		return determined;
+	}
+	
+	public void setRemoval(int[] rem){
+		for (int i = 0; i < rem.length; i++){
+			removalStruct.add(rem[i]);
+		}
+	}
+	
+	public void setW0(double[] vals){
+		regress0 = new double[318-removalStruct.size()];
+		for (int i = 0; i < vals.length; i++){
+			regress0[i] = vals[i];
+		}
+	}
+	
+	public void setW1(double[] vals){
+		regress = new double[318-removalStruct.size()];
+		for (int i = 0; i < vals.length; i++){
+			regress[i] = vals[i];
+		}
 	}
 }

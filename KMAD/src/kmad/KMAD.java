@@ -81,10 +81,10 @@ public class KMAD {
 		in2.close();
 		
 		for (i = 0; i < 318; i++) {
-			delta[i] = Math.abs((vals[i] - vals[i + 230]));
+			delta[i] = Math.abs((vals[i] - vals[i + 318]));
 			// System.out.println(delta[i]);
 		}
-
+		System.out.println("Delta length is: " + delta.length);
 		//Call the three approaches.
 		// TODO: Add calling method for ID3
 		//Genetic genetic = new Genetic(delta, inFile);

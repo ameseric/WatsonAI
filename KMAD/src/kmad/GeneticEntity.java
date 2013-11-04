@@ -21,7 +21,7 @@ public class GeneticEntity {
 
 	}
 
-	public GeneticEntity(double delta[]) {
+	public GeneticEntity(double delta[], boolean rand) {
 		this.weights = delta;
 		this.length = delta.length;
 		this.numCorrect = 0;
@@ -30,7 +30,7 @@ public class GeneticEntity {
 		for (int i = 0; i < this.length; i++) {
 			if (weights[i] == 0) {
 				weights[i] = 0;
-			} else
+			} else if(rand)
 				weights[i] = (r.nextDouble() - 0.5) * 2 / weights[i];
 		}
 		// System.out.println(this.toString());

@@ -51,6 +51,7 @@ public class Genetic{
 	}
 	
 	public void scoreFile(File evalFile){
+		this.evaluationScores = new ArrayList<SpecTuple>();
 		Scanner in = null;
 		try {
 			in = new Scanner(evalFile);
@@ -65,13 +66,12 @@ public class Genetic{
 			candidateScore = this.bestEntity.evaluateCandidate(candidate);
 			SpecTuple tuple = new SpecTuple(candidateScore, candidate.getID());
 			this.evaluationScores.add(tuple);
-			tuple = null;
+			//System.out.println(candidate.getID() + " " + candidateScore);
+			if(candidateScore > 4000){
+				System.out.println(candidate.getID());
+			}
 		}
 		in.close();
-		System.out.println("Genetic Results:");
-		for (SpecTuple tuple : this.evaluationScores) {
-			System.out.println(tuple.ID + ": " + tuple.score);
-		}
 	}
     
     public void runTraining(){
@@ -297,7 +297,7 @@ public class Genetic{
 		GeneticEntity newPopulation[] = new GeneticEntity[Genetic.PopulationSize];
 		
 		for(int i = 0; i < Genetic.PopulationSize; i++){
-			GeneticEntity e = new GeneticEntity(columns);
+			GeneticEntity e = new GeneticEntity(columns, true);
 			//System.out.println("temporary value " + temp);
 			newPopulation[i] = new GeneticEntity();//creator(this.population.get(p1), this.population.get(p2));
 			newPopulation[i].weights = e.weights.clone();
@@ -308,6 +308,13 @@ public class Genetic{
 			population.add(newPopulation[i]);
 		}
 		
+	}
+
+	public void run(File evalFile, double[] best) {
+		// TODO Auto-generated method stub
+		GeneticEntity e = new GeneticEntity(best, false);
+		this.bestEntity = e;
+		this.scoreFile(evalFile);
 	}
 	
 }

@@ -18,17 +18,17 @@ public class Genetic{
     double delta[];
     int max;
 	private ArrayList<Integer> scores;
-	private File inFile;
+	private ArrayList<Candidate> candidates;
 	private GeneticEntity bestEntity;
 	private ArrayList<SpecTuple> evaluationScores;
 	private boolean half;
 	
 	
     
-	public Genetic(double delta[], File inFile){
+	public Genetic(double delta[], ArrayList<Candidate> candidates){
 		generation = 0;
 		this.delta = delta;
-		this.inFile = inFile;
+		this.candidates = candidates;
 		this.scores = new ArrayList<Integer>();
 	}
 	
@@ -163,25 +163,30 @@ public class Genetic{
 		//this.scores = Scoring.geneticScores(population, popScores);
 //		this.scores = popScores;
 		
-		Scanner in = null;
-		try {
-			in = new Scanner(this.inFile);
-		} catch (FileNotFoundException e) {
-			System.out.println("Input File not found");
-			System.exit(1); // can't do anything, exit.
-		}
-		Candidate candidate = null;
-//		int u = 0;
-		while(in.hasNextLine()){
-			candidate = new Candidate(in.nextLine(), true);
+//		Scanner in = null;
+//		try {
+//			in = new Scanner(this.inFile);
+//		} catch (FileNotFoundException e) {
+//			System.out.println("Input File not found");
+//			System.exit(1); // can't do anything, exit.
+//		}
+//		Candidate candidate = null;
+////		int u = 0;
+//		while(in.hasNextLine()){
+//			candidate = new Candidate(in.nextLine(), true);
+////			u++;
+////			if(u > 1000)
+////				break;
+//		}
+//		in.close();
+		
+		for (Candidate candidate : this.candidates) {
 			for (GeneticEntity entity : this.population) {
 				entity.scoreCandidate(candidate);
 			}
-//			u++;
-//			if(u > 1000)
-//				break;
+			
 		}
-		in.close();
+		
 		float aveScore = 0;
 		for (GeneticEntity entity : this.population) {
 			this.scores.add(entity.getScore(half));

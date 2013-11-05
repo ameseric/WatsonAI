@@ -22,6 +22,8 @@ public class Genetic{
 	private GeneticEntity bestEntity;
 	private ArrayList<SpecTuple> evaluationScores;
 	private boolean half;
+	private File inFile;
+	private int[] candidateIDs;
 	
 	
     
@@ -32,8 +34,8 @@ public class Genetic{
 		this.scores = new ArrayList<Integer>();
 	}
 	
-	public void run(File evalFile){
-		this.runTraining();
+	public void run(File evalFile, ArrayList<SpecTuple> trainTuples, ArrayList<SpecTuple> evalTuples){
+		this.runTraining(trainTuples);
 		
 		int maxIndex = 0;
 		for(int i = 1; i < scores.size(); i++){
@@ -47,10 +49,15 @@ public class Genetic{
 		this.scores = null;
 		
 		System.out.println("Best candidate: " + this.bestEntity.toString());
-		this.scoreFile(evalFile);
+		this.scoreFile(evalFile, evalTuples);
 	}
 	
-	public void scoreFile(File evalFile){
+	public void scoreFile(File evalFile, ArrayList<SpecTuple> evalTuples){
+		this.candidateIDs = new int[evalTuples.size()];
+    	for(int i = 0; i < evalTuples.size(); i++){
+    		candidateIDs[i] = evalTuples.get(i).ID;
+    	}
+    	
 		this.evaluationScores = new ArrayList<SpecTuple>();
 		Scanner in = null;
 		try {
@@ -61,20 +68,24 @@ public class Genetic{
 		}
 		Candidate candidate = null;
 		double candidateScore;
+		int i = 0;
 		while(in.hasNextLine()){
 			candidate = new Candidate(in.nextLine(), false);
-			candidateScore = this.bestEntity.evaluateCandidate(candidate);
-			SpecTuple tuple = new SpecTuple(candidateScore, candidate.getID());
-			this.evaluationScores.add(tuple);
-			//System.out.println(candidate.getID() + " " + candidateScore);
-			if(candidateScore > 4000){
-				System.out.println(candidate.getID());
+			if(candidate.getID() == this.candidateIDs[i]){
+				i++;
+				candidateScore = this.bestEntity.evaluateCandidate(candidate);
+				SpecTuple tuple = new SpecTuple(candidateScore, candidate.getID());
+				this.evaluationScores.add(tuple);
+				//System.out.println(candidate.getID() + " " + candidateScore);
+				if(candidateScore > 4000){
+					System.out.println(candidate.getID());
+				}
 			}
 		}
 		in.close();
 	}
     
-    public void runTraining(){
+    public void runTraining(ArrayList<SpecTuple> tuples){
 		//put main code here for thread implementation- need to mutate the passed-in arraylist
 		
     	//for now i'm just having it do setup, and then have it call another method that will be recursive
@@ -98,7 +109,7 @@ public class Genetic{
 		}
 		
 		
-		geneticAct(columns, columns);
+		geneticAct(columns, columns, tuples);
 		System.out.println(this.max);
 		//System.out.printf("outfile length is: %d \n", outfile.length());
 		//long x = outfile.length();
@@ -129,7 +140,12 @@ public class Genetic{
 		
     }
     
-    public void geneticAct(double[] columns, double[] delta){
+    public void geneticAct(double[] columns, double[] delta, ArrayList<SpecTuple> tuples){
+    	this.candidateIDs = new int[tuples.size()];
+    	for(int i = 0; i < tuples.size(); i++){
+    		candidateIDs[i] = tuples.get(i).ID;
+    	}
+    	
     	System.out.println("Creating generation 0");
     	this.half = true;
     	this.createInitialPopulation(columns);
@@ -163,31 +179,33 @@ public class Genetic{
 		//this.scores = Scoring.geneticScores(population, popScores);
 //		this.scores = popScores;
 		
-//		Scanner in = null;
-//		try {
-//			in = new Scanner(this.inFile);
-//		} catch (FileNotFoundException e) {
-//			System.out.println("Input File not found");
-//			System.exit(1); // can't do anything, exit.
-//		}
-//		Candidate candidate = null;
-////		int u = 0;
-//		while(in.hasNextLine()){
-//			candidate = new Candidate(in.nextLine(), true);
-////			u++;
-////			if(u > 1000)
-////				break;
-//		}
-//		in.close();
-		
-		for (Candidate candidate : this.candidates) {
-			for (GeneticEntity entity : this.population) {
-				entity.scoreCandidate(candidate);
-			}
-			
+		Scanner in = null;
+		try {
+			in = new Scanner(this.inFile);
+		} catch (FileNotFoundException e) {
+			System.out.println("Input File not found");
+			System.exit(1); // can't do anything, exit.
 		}
+		Candidate candidate = null;
 		
-		float aveScore = 0;
+		int i = 0;
+
+		while(in.hasNextLine()){
+			candidate = new Candidate(in.nextLine(), true);
+			if(candidate.getID() == this.candidateIDs[i]){
+				i++;
+				for (GeneticEntity entity : this.population) {
+					entity.scoreCandidate(candidate);
+				}				
+			}
+		}
+		in.close();
+		
+//		for (Candidate candidate : this.candidates) {
+//			
+//		}
+		
+		double aveScore = 0;
 		for (GeneticEntity entity : this.population) {
 			this.scores.add(entity.getScore(half));
 			aveScore += entity.getScore(half)/Genetic.PopulationSize;
@@ -315,11 +333,11 @@ public class Genetic{
 		
 	}
 
-	public void run(File evalFile, double[] best) {
+	public void run(File evalFile, double[] best, ArrayList<SpecTuple> evalTuples) {
 		// TODO Auto-generated method stub
 		GeneticEntity e = new GeneticEntity(best, false);
 		this.bestEntity = e;
-		this.scoreFile(evalFile);
+		this.scoreFile(evalFile, evalTuples);
 	}
 	
 }
